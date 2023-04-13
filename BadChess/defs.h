@@ -2,6 +2,7 @@
 #define DEFS_H
 
 #include "stdlib.h"
+#include "cstdio" // Not sure if should be included, needed for debug
 
 #define DEBUG // Comment out to run at full speed
 
@@ -27,6 +28,8 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
 
+#define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Starting FEN string
+
 enum { EMPTY, wP, wN, wB, wR, wQ, wK, bP, bN, bB, bR, bQ, bK }; // Enumerating pieces
 enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE }; // Enumerating Files
 enum { RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE }; // Enumerating Ranks
@@ -39,7 +42,7 @@ enum {
 	A5 = 61, B5, C5, D5, E5, F5, G5, H5,
 	A6 = 71, B6, C6, D6, E6, F6, G6, H6,
 	A7 = 81, B7, C7, D7, E7, F7, G7, H7,
-	A8 = 91, B8, C8, D8, E8, F8, G8, H8, NO_SQ
+	A8 = 91, B8, C8, D8, E8, F8, G8, H8, NO_SQ, OFFBOARD
 }; // Enumberating board structure
 
 enum { TRUE, FALSE }; // True False enum
@@ -76,7 +79,7 @@ typedef struct {
 	U64 posKey; // Position/Hash Key to represent position on board
 
 	int pceNum[13]; // Number of pieces on the board, indexed by piece type
-	int big[3]; // Number of big pieces that are not pawns
+	int bigPce[3]; // Number of big pieces that are not pawns
 	int majPce[3]; // Number of major pieces
 	int minPce[3]; // Number of minor pieces
 
@@ -121,5 +124,10 @@ extern int CountBits(U64 b);
 
 // hashkeys.cpp
 extern U64 GeneratePosKey(const S_BOARD* pos);
+
+// board.cpp
+extern void ResetBoard(S_BOARD* pos);
+
+
 
 #endif
