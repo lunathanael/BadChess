@@ -1,13 +1,14 @@
 // init.cpp
 
 #include "defs.h"
+#include "stdio.h"
 #include "stdLib.h"
 
 // Fill 64 bits with random numbers, I.e: 0000 000000000000000 000000000000000 000000000000000 000000000000000
-#define RAND_64 (	(U64)rand() + \
-					(U64)rand() << 15 + \
-					(U64)rand() << 30 + \
-					(U64)rand() << 45 + \
+#define RAND_64 (	(U64)rand() | \
+					(U64)rand() << 15 | \
+					(U64)rand() << 30 | \
+					(U64)rand() << 45 | \
 					((U64)rand() & 0xf) << 60	)
 
 int Sq120ToSq64[BRD_SQ_NUM];
@@ -21,9 +22,40 @@ U64 PieceKeys[13][120]; // Pieces indexed by squares
 U64 SideKey; // Side to move
 U64 CastleKeys[16]; // Castle Rights, I.e: 1 0 0 1
 
+// Define Files and Ranks for conversion
+int FilesBrd[BRD_SQ_NUM];
+int RanksBrd[BRD_SQ_NUM];
+
+// Function to creat arrays to convert index to file and rank
+void InitFilesRanksBrd() {
+	
+	// Define Indices
+	int index = 0;
+	int file = FILE_A;
+	int rank = RANK_1;
+	int sq = A1;
+	int sq64 = 0;
+
+	// Set Arrays to "offboard"
+	for (index = 0; index < BRD_SQ_NUM; ++index) {
+		FilesBrd[index] = OFFBOARD;
+		RanksBrd[index] = OFFBOARD;
+	}
+
+	// Setting by rank and file
+	for (rank = RANK_1; rank <= RANK_8; ++rank) {
+		for (file = FILE_A; file <= FILE_H; ++file) {
+			sq = FR2SQ(file, rank);
+			FilesBrd[sq] = file;
+			RanksBrd[sq] = rank;
+		}
+	}
+
+}
+
 void InitHashKeys() {
 	
-	// Indices
+	// Define Indices
 	int index = 0;
 	int index2 = 0;
 	// Fill PieceKeys with random numbers
@@ -88,4 +120,5 @@ void AllInit() {
 	InitSq120To64();
 	InitBitMasks();
 	InitHashKeys();
+	InitFilesRanksBrd();
 }

@@ -28,7 +28,7 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
 
-#define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Starting FEN string
+#define START_FENN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Starting FEN string
 
 enum { EMPTY, wP, wN, wB, wR, wQ, wK, bP, bN, bB, bR, bQ, bK }; // Enumerating pieces
 enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE }; // Enumerating Files
@@ -45,7 +45,7 @@ enum {
 	A8 = 91, B8, C8, D8, E8, F8, G8, H8, NO_SQ, OFFBOARD
 }; // Enumberating board structure
 
-enum { TRUE, FALSE }; // True False enum
+enum { FALSE, TRUE }; // True False enum
 
 enum { WKCA = 1, WQCA = 2, BKCA = 4, BQCA = 8 }; // White and Black castling rights in bits, I.e: 1 1 1 1
 
@@ -79,9 +79,10 @@ typedef struct {
 	U64 posKey; // Position/Hash Key to represent position on board
 
 	int pceNum[13]; // Number of pieces on the board, indexed by piece type
-	int bigPce[3]; // Number of big pieces that are not pawns
-	int majPce[3]; // Number of major pieces
-	int minPce[3]; // Number of minor pieces
+	int bigPce[2]; // Number of big pieces that are not pawns
+	int majPce[2]; // Number of major pieces
+	int minPce[2]; // Number of minor pieces
+	int material[2]; // Mateiral on board
 
 	S_UNDO history[MAXGAMEMOVES]; // Store information to board history
 
@@ -110,6 +111,19 @@ extern U64 ClearMask[64]; // Array to clear bit in bitboard
 extern U64 PieceKeys[13][120]; // Pieces indexed by squares
 extern U64 SideKey; // Side to move
 extern U64 CastleKeys[16]; // Castle Rights, I.e: 1 0 0 1
+extern char PceChar[]; // Define Array Piece to print board
+extern char SideChar[]; // Define Array Side to print board
+extern char RankChar[]; // Define Array Rank to print board
+extern char FileChar[]; // Define Array File to print board
+
+extern int PieceBig[13]; // Big
+extern int PieceMaj[13]; // Major
+extern int PieceMin[13]; // Minor
+extern int PieceVal[13]; // Value
+extern int PieceCol[13]; // Color
+
+extern int FilesBrd[BRD_SQ_NUM]; // Defines Files for conversion
+extern int RanksBrd[BRD_SQ_NUM]; // Defines Ranks for conversion
 
 
 /* FUNCTIONS */
@@ -127,7 +141,10 @@ extern U64 GeneratePosKey(const S_BOARD* pos);
 
 // board.cpp
 extern void ResetBoard(S_BOARD* pos);
-
+extern int ParseFen(char* fen, S_BOARD* pos);
+extern void PrintBoard(const S_BOARD* pos);
+extern void UpdateListsMaterial(S_BOARD* pos);
+extern int CheckBoard(const S_BOARD* pos);
 
 
 #endif
