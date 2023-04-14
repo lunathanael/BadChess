@@ -2,10 +2,7 @@
 
 #include "stdio.h"
 #include "defs.h"
-#include "string.h"
-
-// TEMP:
-char START_FEN[] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+#include <string>
 
 // Function to check board
 int CheckBoard(const S_BOARD* pos) {
@@ -133,7 +130,7 @@ void UpdateListsMaterial(S_BOARD* pos) {
 }
 
 // Parse FEN string
-int ParseFen(char *fen, S_BOARD *pos) {
+int ParseFen(const char *fen, S_BOARD *pos) {
 
 	// Check that there is somethign to point at
 	ASSERT(fen != NULL);

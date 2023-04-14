@@ -3,6 +3,7 @@
 
 #include "stdlib.h"
 #include "cstdio" // Not sure if should be included, needed for debug
+#include <string>
 
 #define DEBUG // Comment out to run at full speed
 
@@ -28,7 +29,7 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
 
-#define START_FENN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Starting FEN string
+#define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Starting FEN string
 
 enum { EMPTY, wP, wN, wB, wR, wQ, wK, bP, bN, bB, bR, bQ, bK }; // Enumerating pieces
 enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE }; // Enumerating Files
@@ -48,6 +49,12 @@ enum {
 enum { FALSE, TRUE }; // True False enum
 
 enum { WKCA = 1, WQCA = 2, BKCA = 4, BQCA = 8 }; // White and Black castling rights in bits, I.e: 1 1 1 1
+
+// Store move 
+typedef struct {
+	int move;
+	int score;
+} S_MOVE;
 
 // Stucture for Move Undo
 typedef struct {
@@ -91,6 +98,30 @@ typedef struct {
 
 } S_BOARD;
 
+
+/* GAME MOVE
+0000 0000 0000 0000 0000 0111 1111 -> From 0x7F
+0000 0000 0000 0011 1111 1000 0000 -> To >> 7, 0x7F
+0000 0000 0011 1100 0000 0000 0000 -> Captured >> 14, 0xF
+0000 0000 0100 0000 0000 0000 0000 -> EP 0x40000
+0000 0000 1000 0000 0000 0000 0000 -> Pawn Start, 0x80000
+0000 1111 0000 0000 0000 0000 0000 -> Promoted Piece >> 14, 0xF
+1111 0000 0000 0000 0000 0000 0000 -> Castle 0x1000000
+*/
+
+// Retrieve information for move
+#define FROMSQ(m) ((m) & 0x7F) // From square
+#define TOSQ(m) (((m)>>7) & 0x7F) // To square
+#define CAPTURED(m) (((m)>>14) & 0xF) // Piece Captured
+#define PROMOTED(m) (((m)>>20) & 0xF) // Promotion
+
+#define MFLAGEP 0x40000 // Move Flag for en Passant
+#define MFLAGPS 0x80000 // Move Flag for Pawn Start
+#define MFLAGCA 0x1000000 // Move Flag for Castle
+
+#define MFLAGCAP 0x7C000 // Move Flag for capture
+#define MFLAGPROM 0xF00000 // Move Flag for promotion
+
 /* MACROS */
 
 #define FR2SQ(f, r) ( (21 + (f) ) + ( (r) * 10 ) ) // Convert file/rank to square number
@@ -100,6 +131,11 @@ typedef struct {
 #define CNT(b) CountBits(b)
 #define CLRBIT(bb,sq) ((bb) &= ClearMask[(sq)])
 #define SETBIT(bb,sq) ((bb) |= SetMask[(sq)])
+
+#define ISBQ(p) (PieceBishopQueen[(p)]) // Is a piece a bishop or queen
+#define ISRQ(p)	(PieceRookQueen[(p)]) // Is a piece a rook or a queen
+#define ISKN(p) (PieceKnight[(p)]) // Is a piece a knight
+#define ISKI(p) (PieceKing[(p)]) // Is a piece a king
 
 
 /* GLOBALS */
@@ -125,6 +161,11 @@ extern int PieceCol[13]; // Color
 extern int FilesBrd[BRD_SQ_NUM]; // Defines Files for conversion
 extern int RanksBrd[BRD_SQ_NUM]; // Defines Ranks for conversion
 
+extern int PieceKnight[13]; // Array to return if a piece is a knight
+extern int PieceKing[13]; // Array to return if a piece is a king
+extern int PieceRookQueen[13]; // Array to return if a piece is a rook or a queen
+extern int PieceBishopQueen[13]; // Array to return if a piece is a rook or a queen
+
 
 /* FUNCTIONS */
 
@@ -141,10 +182,16 @@ extern U64 GeneratePosKey(const S_BOARD* pos);
 
 // board.cpp
 extern void ResetBoard(S_BOARD* pos);
-extern int ParseFen(char* fen, S_BOARD* pos);
+extern int ParseFen(const char* fen, S_BOARD* pos);
 extern void PrintBoard(const S_BOARD* pos);
 extern void UpdateListsMaterial(S_BOARD* pos);
 extern int CheckBoard(const S_BOARD* pos);
 
+// attack.cpp
+extern int SqAttacked(const int sq, const int side, const S_BOARD* pos);
+
+// io.cpp
+extern char* PrSq(const int sq);
+extern char* PrMove(const int move);
 
 #endif

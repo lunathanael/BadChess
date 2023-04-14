@@ -127,17 +127,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="attack.cpp" />
     <ClCompile Include="BadChess.cpp" />
     <ClCompile Include="bitboards.cpp" />
     <ClCompile Include="board.cpp" />
     <ClCompile Include="data.cpp" />
     <ClCompile Include="hashkeys.cpp" />
     <ClCompile Include="init.cpp" />
+    <ClCompile Include="io.cpp" />
     <ClCompile Include="makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BadChess.h" />
     <ClInclude Include="defs.h" />
+    <ClInclude Include="misc.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
