@@ -4,11 +4,37 @@
 #include "defs.h"
 
 
+#define INFINITE 30000 // Infinte score definition
+#define MATE 29000 // Mate score definition
+
 
 // Check if the time is up or interrupt from GUI
 static void CheckUp() {
 
 }
+
+
+// Find the best score in the remaning moves, move ordering
+static void PickNextMove(int moveNum, S_MOVELIST* list) {
+
+	S_MOVE temp;
+	int index = 0;
+	int bestScore = 0;
+	int bestNum = moveNum;
+
+	// Find best score
+	for (index = moveNum; index < list->count; ++index) {
+		if (list->moves[index].score > bestScore) {
+			bestScore = list->moves[index].score;
+			bestNum = index;
+		}
+	}
+	// Reorder movelist
+	temp = list->moves[moveNum];
+	list->moves[moveNum] = list->moves[bestNum];
+	list->moves[bestNum] = temp;
+}
+
 
 // Search for a position repetition
 static int IsRepetition(const S_BOARD* pos) {
@@ -66,7 +92,78 @@ static void ClearForSearch(S_BOARD* pos, S_SEARCHINFO* info) {
 
 // Prevent horizon effect with Quiescence search
 static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
-	return 0;
+	
+	// Valid board
+	ASSERT(CheckBoard(pos));
+
+	++info->nodes; // Increment nodes
+
+	// Repetition
+	if (IsRepetition(pos) || pos->fiftyMove >= 100) {
+		return 0;
+	}
+
+	// Max Depth
+	if (pos->ply > MAXDEPTH - 1) {
+		return EvalPosition(pos);
+	}
+
+	int Score = EvalPosition(pos);
+
+	// Standing pat
+	if (Score >= beta) {
+		return beta;
+	}
+	if (Score > alpha) {
+		alpha = Score;
+	}
+
+	// Generate captures
+	S_MOVELIST list[1];
+	GenerateAllCaptures(pos, list);
+
+	// Variable definitions
+	int MoveNum = 0;
+	int Legal = 0;
+	int OldAlpha = alpha;
+	int BestMove = NOMOVE;
+	Score = -INFINITE;
+	int PvMove = ProbePvTable(pos);
+
+	for (int MoveNum = 0; MoveNum < list->count; ++MoveNum) {
+
+		// Move ordering
+		PickNextMove(MoveNum, list);
+
+		// Not legal move
+		if (!MakeMove(pos, list->moves[MoveNum].move)) {
+			continue;
+		}
+
+		++Legal;
+		Score = -Quiescence(-beta, -alpha, pos, info); // Recursively call function
+		TakeMove(pos);
+
+		// New alpha score
+		if (Score > alpha) {
+			if (Score >= beta) {
+				if (Legal == 1) {
+					++info->fhf; // Searched the best move first
+				}
+				++info->fh;
+
+				return beta;
+			}
+			alpha = Score;
+			BestMove = list->moves[MoveNum].move;
+		}
+	}
+
+	if (alpha != OldAlpha) {
+		StorePvMove(pos, BestMove);
+	}
+
+	return alpha;
 }
 
 
@@ -78,8 +175,8 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 
 	// At terminal node
 	if (depth == 0) {
-		++info->nodes;
-		return EvalPosition(pos);
+		return Quiescence(alpha, beta, pos, info);
+		// return EvalPosition(pos);
 	}
 
 	++info->nodes;
@@ -103,8 +200,22 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 	int OldAlpha = alpha;
 	int BestMove = NOMOVE;
 	int Score = -INFINITE;
+	int PvMove = ProbePvTable(pos);
+
+	// Prioritize Principal variation move
+	if (PvMove != NOMOVE) {
+		for (int MoveNum = 0; MoveNum < list->count; ++MoveNum) {
+			if (list->moves[MoveNum].move == PvMove) {
+				list->moves[MoveNum].score = 2'000'000;
+				break;
+			}
+		}
+	}
 
 	for (int MoveNum = 0; MoveNum < list->count; ++MoveNum) {
+
+		// Move ordering
+		PickNextMove(MoveNum, list);
 
 		// Not legal move
 		if (!MakeMove(pos, list->moves[MoveNum].move)) {
@@ -122,10 +233,22 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 					++info->fhf; // Searched the best move first
 				}
 				++info->fh;
+
+				// Check for capture, adjust killers
+				if (!(list->moves[MoveNum].move & MFLAGCAP)) {
+					pos->searchKillers[1][pos->ply] = pos->searchKillers[0][pos->ply];
+					pos->searchKillers[0][pos->ply] = list->moves[MoveNum].move;
+				}
+
 				return beta;
 			}
 			alpha = Score;
 			BestMove = list->moves[MoveNum].move;
+
+			// Check for capture, adjust Hueristic
+			if (!(list->moves[MoveNum].move & MFLAGCAP)) {
+				pos->searchHistory[pos->pieces[FROMSQ(BestMove)]][TOSQ(BestMove)] += depth; // Prioritizes moves closer to root
+			}
 		}
 	}
 

@@ -30,8 +30,8 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
 #define MAXPOSITIONMOVES 256 // Maximum number of moves expected in a given position
 #define MAXDEPTH 64 // Maximum depth for searching
-#define INFINITE 30000 // Infinte score definition
-#define ISMATE (INFINITE - MAXDEPTH)
+//#define INFINITE 30000 // Infinte score definition
+//#define ISMATE (INFINITE - MAXDEPTH)
 
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Starting FEN string
 
@@ -265,6 +265,7 @@ extern int PieceValid(const int pce);
 extern void GenerateAllMoves(const S_BOARD* pos, S_MOVELIST* list);
 extern int MoveExists(S_BOARD* pos, const int move);
 extern void InitMvvLva();
+extern void GenerateAllCaptures(const S_BOARD* pos, S_MOVELIST* list);
 
 // makemove.cpp
 extern int MakeMove(S_BOARD* pos, int move);
