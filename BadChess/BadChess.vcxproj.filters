@@ -54,6 +54,12 @@
     <ClCompile Include="perft.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="search.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="misc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BadChess.h">

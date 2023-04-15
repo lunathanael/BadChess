@@ -129,6 +129,8 @@ typedef struct {
 #define MFLAGCAP 0x7C000 // Move Flag for capture
 #define MFLAGPROM 0xF00000 // Move Flag for promotion
 
+#define NOMOVE 0 // No move
+
 /* MACROS */
 
 #define FR2SQ(f, r) ( (21 + (f) ) + ( (r) * 10 ) ) // Convert file/rank to square number
@@ -203,6 +205,7 @@ extern int SqAttacked(const int sq, const int side, const S_BOARD* pos);
 extern char* PrSq(const int sq);
 extern char* PrMove(const int move);
 extern void PrintMoveList(const S_MOVELIST* list);
+extern int ParseMove(char* ptrChar, S_BOARD* pos);
 
 // validate.cpp
 extern int SqOnBoard(const int sq);
@@ -220,6 +223,12 @@ extern void TakeMove(S_BOARD* pos);
 
 // perft.cpp
 extern void PerfTest(int depth, S_BOARD* pos);
+
+// search.cpp
+extern void SearchPosition(S_BOARD* pos);
+
+// misc.cpp
+extern int GetTimeMs();
 
 #endif
 

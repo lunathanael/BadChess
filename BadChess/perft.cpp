@@ -41,6 +41,7 @@ void PerfTest(int depth, S_BOARD* pos) {
 	printf("\nStarting perft to Depth:%d\n", depth);
 
 	leafNodes = 0;
+	long start = GetTimeMs();
 
 	S_MOVELIST list[1];
 	GenerateAllMoves(pos, list);
@@ -60,7 +61,7 @@ void PerfTest(int depth, S_BOARD* pos) {
 
 	}
 
-	printf("\nPerft Complete : %ld leaf nodes visited.\n", leafNodes);
+	printf("\nPerft Complete : %ld leaf nodes visited in %dms.\n", leafNodes, GetTimeMs() - start);
 
 	return;
 }
