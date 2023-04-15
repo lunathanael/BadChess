@@ -168,11 +168,12 @@ extern int PieceCol[13]; // Color
 extern int FilesBrd[BRD_SQ_NUM]; // Defines Files for conversion
 extern int RanksBrd[BRD_SQ_NUM]; // Defines Ranks for conversion
 
+extern int PiecePawn[13]; // Array to return if a piece is a pawn
 extern int PieceKnight[13]; // Array to return if a piece is a knight
 extern int PieceKing[13]; // Array to return if a piece is a king
 extern int PieceRookQueen[13]; // Array to return if a piece is a rook or a queen
 extern int PieceBishopQueen[13]; // Array to return if a piece is a rook or a queen
-extern int PieceSlides[13];
+extern int PieceSlides[13]; // Array to return if a piece slides
 
 
 /* FUNCTIONS */
@@ -213,4 +214,13 @@ extern int PieceValid(const int pce);
 // movegen.cpp
 extern void GenerateAllMoves(const S_BOARD* pos, S_MOVELIST* list);
 
+// makemove.cpp
+extern int MakeMove(S_BOARD* pos, int move);
+extern void TakeMove(S_BOARD* pos);
+
+// perft.cpp
+
+
 #endif
+
+
