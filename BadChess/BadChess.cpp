@@ -4,21 +4,21 @@
 #include "stdlib.h"
 #include "defs.h"
 
+#define CASTLE2 "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
 
 int main()
 {
 	AllInit();
 
-	int move = 0;
-	int from = A2;
-	int to = H7;
-	int cap = wR;
-	int prom = bQ;
-	move = (from) | (to << 7) | (cap << 14) | (prom << 20);
+	S_BOARD board[1];
 
-	printf("Algebraic from:%s\n", PrSq(from));
-	printf("Algebraic to:%s\n", PrSq(to));
-	printf("Algebraic move:%s\n", PrMove(move));
+	ParseFen(CASTLE2, board);
+	PrintBoard(board);
+
+	S_MOVELIST list[1];
+	GenerateAllMoves(board, list);
+
+	PrintMoveList(list);
 
 	return 0;
 };

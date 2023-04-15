@@ -30,20 +30,41 @@ char* PrMove(const int move) {
 
 	if (promoted) {
 		char pchar = 'q';
-		if (ISKN(promoted)) {
+		if (IsKN(promoted)) {
 			pchar = 'n';
 		}
-		else if (ISRQ(promoted) && !ISBQ(promoted)) {
-			pchar = 'q';
+		else if (IsRQ(promoted) && !IsBQ(promoted)) {
+			pchar = 'r';
 		}
-		else if (!ISRQ(promoted) && !ISBQ(promoted)) {
+		else if (!IsRQ(promoted) && IsBQ(promoted)) {
 			pchar = 'b';
 		}
 		sprintf(MvStr, "%c%c%c%c%c", ('a' + ff), ('1' + rf), ('a' + ft), ('1' + rt), pchar);
-	}
+	}					
 	else {
 		sprintf(MvStr, "%c%c%c%c", ('a' + ff), ('1' + rf), ('a' + ft), ('1' + rt));
 	}
 
 	return MvStr; // Return pointer to array
+}
+
+// Print the move list
+void PrintMoveList(const S_MOVELIST* list) {
+	// Define the indices
+	int index = 0;
+	int score = 0;
+	int move = 0;
+	
+	printf("MoveList:\n");
+
+	// Print each move in movelist
+	for (index = 0; index < list->count; ++index) {
+		move = list->moves[index].move;
+		score = list->moves[index].score;
+
+		printf("Move:%d > %s (score:%d)\n", index + 1, PrMove(move), score);
+
+	}
+	printf("MoveList Total %d Moves:\n\n", list->count);
+
 }

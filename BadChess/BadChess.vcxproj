@@ -136,6 +136,7 @@
     <ClCompile Include="init.cpp" />
     <ClCompile Include="io.cpp" />
     <ClCompile Include="makefile" />
+    <ClCompile Include="movegen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BadChess.h" />

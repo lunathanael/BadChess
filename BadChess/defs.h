@@ -28,6 +28,7 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 #define BRD_SQ_NUM 120
 
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
+#define MAXPOSITIONMOVES 256 // Maximum number of moves expected in a given position
 
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Starting FEN string
 
@@ -55,6 +56,12 @@ typedef struct {
 	int move;
 	int score;
 } S_MOVE;
+
+// List of moves stored
+typedef struct {
+	S_MOVE moves[MAXPOSITIONMOVES];
+	int count;
+} S_MOVELIST;
 
 // Stucture for Move Undo
 typedef struct {
@@ -132,10 +139,10 @@ typedef struct {
 #define CLRBIT(bb,sq) ((bb) &= ClearMask[(sq)])
 #define SETBIT(bb,sq) ((bb) |= SetMask[(sq)])
 
-#define ISBQ(p) (PieceBishopQueen[(p)]) // Is a piece a bishop or queen
-#define ISRQ(p)	(PieceRookQueen[(p)]) // Is a piece a rook or a queen
-#define ISKN(p) (PieceKnight[(p)]) // Is a piece a knight
-#define ISKI(p) (PieceKing[(p)]) // Is a piece a king
+#define IsBQ(p) (PieceBishopQueen[ (p) ]) // Is a piece a bishop or queen
+#define IsRQ(p)	(PieceRookQueen[ (p) ]) // Is a piece a rook or a queen
+#define IsKN(p) (PieceKnight[ (p) ]) // Is a piece a knight
+#define IsKI(p) (PieceKing[ (p) ]) // Is a piece a king
 
 
 /* GLOBALS */
@@ -165,6 +172,7 @@ extern int PieceKnight[13]; // Array to return if a piece is a knight
 extern int PieceKing[13]; // Array to return if a piece is a king
 extern int PieceRookQueen[13]; // Array to return if a piece is a rook or a queen
 extern int PieceBishopQueen[13]; // Array to return if a piece is a rook or a queen
+extern int PieceSlides[13];
 
 
 /* FUNCTIONS */
@@ -193,5 +201,16 @@ extern int SqAttacked(const int sq, const int side, const S_BOARD* pos);
 // io.cpp
 extern char* PrSq(const int sq);
 extern char* PrMove(const int move);
+extern void PrintMoveList(const S_MOVELIST* list);
+
+// validate.cpp
+extern int SqOnBoard(const int sq);
+extern int SideValid(const int side);
+extern int FileRankValid(const int fr);
+extern int PieceValidEmpty(const int pce);
+extern int PieceValid(const int pce);
+
+// movegen.cpp
+extern void GenerateAllMoves(const S_BOARD* pos, S_MOVELIST* list);
 
 #endif
