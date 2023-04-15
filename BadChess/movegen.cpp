@@ -4,7 +4,7 @@
 #include "defs.h"
 
 // Define Macros
-#define MOVE(f, t, ca, pro, fl) ( (f) | ((t)<<7) | ( (ca) << 14) | ( (pro) << 20)) // Putting together a move
+#define MOVE(f, t, ca, pro, fl) ( (f) | ((t) << 7) | ( (ca) << 14 ) | ( (pro) << 20 ) | (fl)) // Putting together a move
 #define SQOFFBOARD(sq) (FilesBrd[(sq)]==OFFBOARD) // Is a square off board
 
 
@@ -42,21 +42,21 @@ const int NumDir[13] = { 0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8 };
 static void AddQuietMove(const S_BOARD* pos, int move, S_MOVELIST* list) {
 	list->moves[list->count].move = move;
 	list->moves[list->count].score = 0;
-	list->count++; // Increment list
+	++list->count; // Increment list
 }
 
 // Capture move
 static void AddCaptureMove(const S_BOARD* pos, int move, S_MOVELIST* list) {
 	list->moves[list->count].move = move;
 	list->moves[list->count].score = 0;
-	list->count++; // Increment list
+	++list->count; // Increment list
 }
 
 // En Passant move
 static void AddEnPassantMove(const S_BOARD* pos, int move, S_MOVELIST* list) {
 	list->moves[list->count].move = move;
 	list->moves[list->count].score = 0;
-	list->count++; // Increment list
+	++list->count; // Increment list
 }
 
 // White pawn capture move, check for promote
@@ -183,8 +183,6 @@ void GenerateAllMoves(const S_BOARD* pos, S_MOVELIST* list) {
 				if (!SqAttacked(E1, BLACK, pos) && !SqAttacked(F1, BLACK, pos)) {
 					AddQuietMove(pos, MOVE(E1, G1, EMPTY, EMPTY, MFLAGCA), list);
 				}
-				else {
-				}
 			}
 		}
 
@@ -290,14 +288,12 @@ void GenerateAllMoves(const S_BOARD* pos, S_MOVELIST* list) {
 	while (pce != 0) {
 		// Valid piece
 		ASSERT(PieceValid(pce));
-		printf("non sliders pceIndex:%d pce:%d\n", pceIndex, pce);
 
 		for (pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 			sq = pos->pList[pce][pceNum];
 			ASSERT(SqOnBoard(sq)); // Validate square on board
-			printf("Piece:%c on %s\n", PceChar[pce], PrSq(sq));
 
-			// Loop through all directions
+			// loop through all directions
 			for (index = 0; index < NumDir[pce]; ++index) {
 				dir = PceDir[pce][index];
 				t_sq = sq + dir;

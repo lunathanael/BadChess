@@ -1,6 +1,7 @@
 // attack.cpp
 
 #include "defs.h"
+#include "stdio.h"
 
 const int KnDir[8] = { -8, -19, -21, -12, 8, 19, 21, 12 }; // Definitions for the movement of knights
 const int RkDir[4] = { -1, -10, 1, 10 }; // Definitions for the movement of rooks

@@ -2,6 +2,7 @@
 
 #include "stdio.h"
 #include "defs.h"
+#include "stdlib.h"
 
 // Print Square
 char* PrSq(const int sq) {

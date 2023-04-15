@@ -2,7 +2,7 @@
 
 #include "defs.h"
 #include "stdio.h"
-#include "stdLib.h"
+#include "stdlib.h"
 
 // Fill 64 bits with random numbers, I.e: 0000 000000000000000 000000000000000 000000000000000 000000000000000
 #define RAND_64 (	(U64)rand() | \
@@ -34,7 +34,6 @@ void InitFilesRanksBrd() {
 	int file = FILE_A;
 	int rank = RANK_1;
 	int sq = A1;
-	int sq64 = 0;
 
 	// Set Arrays to "offboard"
 	for (index = 0; index < BRD_SQ_NUM; ++index) {

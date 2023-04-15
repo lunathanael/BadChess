@@ -5,7 +5,7 @@
 #include "cstdio" // Not sure if should be included, needed for debug
 #include <string>
 
-#define DEBUG // Comment out to run at full speed
+//#define DEBUG // Comment out to run at full speed
 
 // DEBUG function
 #ifndef DEBUG
@@ -219,7 +219,7 @@ extern int MakeMove(S_BOARD* pos, int move);
 extern void TakeMove(S_BOARD* pos);
 
 // perft.cpp
-
+extern void PerfTest(int depth, S_BOARD* pos);
 
 #endif
 

@@ -137,11 +137,13 @@
     <ClCompile Include="io.cpp" />
     <ClCompile Include="makefile" />
     <ClCompile Include="movegen.cpp" />
+    <ClCompile Include="makemove.cpp" />
+    <ClCompile Include="perft.cpp" />
+    <ClCompile Include="validate.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BadChess.h" />
     <ClInclude Include="defs.h" />
-    <ClInclude Include="misc.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -5,7 +5,7 @@
 
 
 // Hasing Macros
-#define HASH_PCE(pce, sq) (pos->posKey ^= (PieceKeys[(pce)][(sq)]))
+#define HASH_PCE(pce,sq) (pos->posKey ^= (PieceKeys[(pce)][(sq)]))
 #define HASH_CA (pos->posKey ^= (CastleKeys[(pos->castlePerm)]))
 #define HASH_SIDE (pos->posKey ^= (SideKey))
 #define HASH_EP (pos->posKey ^= (PieceKeys[EMPTY][(pos->enPas)]))
@@ -32,6 +32,7 @@ const int CastlePerm[120] = {
 static void ClearPiece(const int sq, S_BOARD* pos) {
 	// Valid square on board
 	ASSERT(SqOnBoard(sq));
+	ASSERT(CheckBoard(pos));
 
 	// Get piece
 	int pce = pos->pieces[sq];
@@ -73,6 +74,7 @@ static void ClearPiece(const int sq, S_BOARD* pos) {
 
 	// Valid index
 	ASSERT(t_pceNum != -1);
+	ASSERT(t_pceNum >= 0 && t_pceNum < 10);
 
 	// Remove piece from piece list
 	--pos->pceNum[pce];
@@ -199,18 +201,18 @@ int MakeMove(S_BOARD* pos, int move) {
 	// Is castling move
 	else if (move & MFLAGCA) {
 		switch (to) {
-			case C1:
-				MovePiece(A1, D1, pos);
-				break;
-			case C8:
-				MovePiece(A8, D8, pos);
-				break;
-			case G1:
-				MovePiece(H1, F1, pos);
-				break;
-			case G8:
-				MovePiece(H8, F8, pos);
-				break;
+		case C1:
+			MovePiece(A1, D1, pos);
+			break;
+		case C8:
+			MovePiece(A8, D8, pos);
+			break;
+		case G1:
+			MovePiece(H1, F1, pos);
+			break;
+		case G8:
+			MovePiece(H8, F8, pos);
+			break;
 		default: ASSERT(FALSE); break;
 		}
 	}
@@ -238,7 +240,7 @@ int MakeMove(S_BOARD* pos, int move) {
 
 	// Fifty Move Rule
 	int captured = CAPTURED(move);
-	// removed: ++pos->fiftyMove;
+	++pos->fiftyMove;
 
 	// Clear captured piece off board
 	if (captured != EMPTY) {
@@ -246,14 +248,11 @@ int MakeMove(S_BOARD* pos, int move) {
 		ClearPiece(to, pos);
 		pos->fiftyMove = 0;
 	}
-	else {
-		// Trying this
-		++pos->fiftyMove;
-	}
 
 	// Increment ply
 	++pos->hisPly;
 	++pos->ply;
+
 
 	// Pawn moving from 1st square
 	if (PiecePawn[pos->pieces[from]]) {
@@ -341,7 +340,7 @@ void TakeMove(S_BOARD* pos) {
 	// Flip side
 	pos->side ^= 1;
 	HASH_SIDE;
-	
+
 	// Undo en Passant and castle
 	if (MFLAGEP & move) {
 		if (pos->side == WHITE) {
@@ -353,18 +352,18 @@ void TakeMove(S_BOARD* pos) {
 	}
 	else if (MFLAGCA & move) {
 		switch (to) {
-			case C1:
-				MovePiece(D1, A1, pos);
-				break;
-			case C8:
-				MovePiece(D8, A8, pos);
-				break;
-			case G1:
-				MovePiece(F1, H1, pos);
-				break;
-			case G8:
-				MovePiece(F8, H8, pos);
-				break;
+		case C1:
+			MovePiece(D1, A1, pos);
+			break;
+		case C8:
+			MovePiece(D8, A8, pos);
+			break;
+		case G1:
+			MovePiece(F1, H1, pos);
+			break;
+		case G8:
+			MovePiece(F8, H8, pos);
+			break;
 		default: ASSERT(FALSE); break;
 		}
 	}
@@ -390,7 +389,7 @@ void TakeMove(S_BOARD* pos) {
 		ClearPiece(from, pos);
 		AddPiece(from, pos, (PieceCol[PROMOTED(move)] == WHITE ? wP : bP));
 	}
-	
+
 	// Valid Board
 	ASSERT(CheckBoard(pos));
 
