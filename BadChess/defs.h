@@ -29,6 +29,7 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
 #define MAXPOSITIONMOVES 256 // Maximum number of moves expected in a given position
+#define MAXDEPTH 64 // Maximum depth for searching
 
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Starting FEN string
 
@@ -117,9 +118,32 @@ typedef struct {
 
 	// Principal variation table
 	S_PVTABLE PvTable[1];
+	int pvArray[MAXDEPTH];
+
+	int searchHistory[13][BRD_SQ_NUM]; // Track alpha beating moves
+	int searchKillers[2][MAXDEPTH]; // Stores 2 moves recently cause beta cutoff
 
 
 } S_BOARD;
+
+
+// Structure for information about the search
+typedef struct {
+
+	int starttime;
+	int stoptime;
+	int depth;
+	int depthset;
+	int timeset;
+	int movestogo;
+	int infinite;
+
+	long nodes;
+
+	int quit;
+	int stopped;
+
+} S_SEARCHINFO;
 
 
 /* GAME MOVE
@@ -232,6 +256,7 @@ extern int PieceValid(const int pce);
 
 // movegen.cpp
 extern void GenerateAllMoves(const S_BOARD* pos, S_MOVELIST* list);
+extern int MoveExists(S_BOARD* pos, const int move);
 
 // makemove.cpp
 extern int MakeMove(S_BOARD* pos, int move);
@@ -248,6 +273,9 @@ extern int GetTimeMs();
 
 // pvtable.cpp
 extern void InitPvTable(S_PVTABLE* table);
+extern void StorePvMove(const S_BOARD* pos, const int move);
+extern int ProbePvTable(const S_BOARD* pos);
+extern int GetPvLine(const int depth, S_BOARD* pos);
 
 #endif
 

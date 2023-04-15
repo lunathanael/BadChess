@@ -132,6 +132,7 @@
     <ClCompile Include="bitboards.cpp" />
     <ClCompile Include="board.cpp" />
     <ClCompile Include="data.cpp" />
+    <ClCompile Include="evaluate.cpp" />
     <ClCompile Include="hashkeys.cpp" />
     <ClCompile Include="init.cpp" />
     <ClCompile Include="io.cpp" />

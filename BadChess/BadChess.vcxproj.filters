@@ -63,6 +63,9 @@
     <ClCompile Include="pvtable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="evaluate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BadChess.h">
