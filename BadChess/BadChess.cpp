@@ -28,7 +28,7 @@ int main()
 			break;
 		}
 		else if (input[0] == 'p') {
-			PerfTest(4, board);
+			PerfTest(5, board);
 		}
 		else if (input[0] == 't') {
 			TakeMove(board);

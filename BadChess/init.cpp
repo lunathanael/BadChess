@@ -27,7 +27,7 @@ int FilesBrd[BRD_SQ_NUM];
 int RanksBrd[BRD_SQ_NUM];
 
 // Function to creat arrays to convert index to file and rank
-void InitFilesRanksBrd() {
+static void InitFilesRanksBrd() {
 	
 	// Define Indices
 	int index = 0;
@@ -52,7 +52,7 @@ void InitFilesRanksBrd() {
 
 }
 
-void InitHashKeys() {
+static void InitHashKeys() {
 	
 	// Define Indices
 	int index = 0;
@@ -71,7 +71,7 @@ void InitHashKeys() {
 }
 
 // Initialize bitmasks to set and clear bits
-void InitBitMasks() {
+static void InitBitMasks() {
 	int index = 0;
 
 	// Zero the values inside the array
@@ -88,7 +88,7 @@ void InitBitMasks() {
 }
 
 // Init function for conversion from 120 to 64
-void InitSq120To64() {
+static void InitSq120To64() {
 
 	// Declare Variables
 	int index = 0;

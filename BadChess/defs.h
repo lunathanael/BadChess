@@ -5,7 +5,7 @@
 #include "cstdio" // Not sure if should be included, needed for debug
 #include <string>
 
-//#define DEBUG // Comment out to run at full speed
+#define DEBUG // Comment out to run at full speed
 
 // DEBUG function
 #ifndef DEBUG
@@ -63,6 +63,18 @@ typedef struct {
 	int count;
 } S_MOVELIST;
 
+// Structure for principal variation entry
+typedef struct {
+	U64 posKey;
+	int move;
+} S_PVENTRY;
+
+// Structure for pvEntry table
+typedef struct {
+	S_PVENTRY* pTable;
+	int numEntries;
+} S_PVTABLE;
+
 // Stucture for Move Undo
 typedef struct {
 
@@ -102,6 +114,10 @@ typedef struct {
 
 	// Piece list
 	int pList[13][10]; // 13 Piece types, 10 possible Pieces at a time: pList[wN][0] = E1; ....
+
+	// Principal variation table
+	S_PVTABLE PvTable[1];
+
 
 } S_BOARD;
 
@@ -229,6 +245,9 @@ extern void SearchPosition(S_BOARD* pos);
 
 // misc.cpp
 extern int GetTimeMs();
+
+// pvtable.cpp
+extern void InitPvTable(S_PVTABLE* table);
 
 #endif
 
