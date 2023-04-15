@@ -28,8 +28,7 @@ int GetPvLine(const int depth, S_BOARD* pos) {
 			pos->pvArray[count++] = move;
 		}
 		else {
-			// Illegal move or count reached
-			break;
+			break; // Illegal move or count reached
 		}
 		move = ProbePvTable(pos);
 	}
@@ -44,7 +43,7 @@ int GetPvLine(const int depth, S_BOARD* pos) {
 
 
 // Function to clear the pvTable
-static void ClearPvTable(S_PVTABLE* table) {
+void ClearPvTable(S_PVTABLE* table) {
 
 	S_PVENTRY* pvEntry;
 

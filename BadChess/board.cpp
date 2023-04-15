@@ -298,9 +298,6 @@ void ResetBoard(S_BOARD *pos) {
 	// Reset Position Key
 	pos->posKey = 0ULL;
 
-	// Initialize PvTable
-	InitPvTable(pos->PvTable);
-
 }
 
 // Print the board

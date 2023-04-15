@@ -5,7 +5,7 @@
 #include "cstdio" // Not sure if should be included, needed for debug
 #include <string>
 
-#define DEBUG // Comment out to run at full speed
+//#define DEBUG // Comment out to run at full speed
 
 // DEBUG function
 #ifndef DEBUG
@@ -30,8 +30,11 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
 #define MAXPOSITIONMOVES 256 // Maximum number of moves expected in a given position
 #define MAXDEPTH 64 // Maximum depth for searching
+#define INFINITE 30000 // Infinte score definition
+#define ISMATE (INFINITE - MAXDEPTH)
 
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Starting FEN string
+
 
 enum { EMPTY, wP, wN, wB, wR, wQ, wK, bP, bN, bB, bR, bQ, bK }; // Enumerating pieces
 enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE }; // Enumerating Files
@@ -51,6 +54,7 @@ enum {
 enum { FALSE, TRUE }; // True False enum
 
 enum { WKCA = 1, WQCA = 2, BKCA = 4, BQCA = 8 }; // White and Black castling rights in bits, I.e: 1 1 1 1
+
 
 // Store move 
 typedef struct {
@@ -142,6 +146,9 @@ typedef struct {
 
 	int quit;
 	int stopped;
+
+	float fh; // Fail high
+	float fhf; // Fail high fitst
 
 } S_SEARCHINFO;
 
@@ -257,6 +264,7 @@ extern int PieceValid(const int pce);
 // movegen.cpp
 extern void GenerateAllMoves(const S_BOARD* pos, S_MOVELIST* list);
 extern int MoveExists(S_BOARD* pos, const int move);
+extern void InitMvvLva();
 
 // makemove.cpp
 extern int MakeMove(S_BOARD* pos, int move);
@@ -266,7 +274,7 @@ extern void TakeMove(S_BOARD* pos);
 extern void PerfTest(int depth, S_BOARD* pos);
 
 // search.cpp
-extern void SearchPosition(S_BOARD* pos);
+extern void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info);
 
 // misc.cpp
 extern int GetTimeMs();
@@ -276,6 +284,11 @@ extern void InitPvTable(S_PVTABLE* table);
 extern void StorePvMove(const S_BOARD* pos, const int move);
 extern int ProbePvTable(const S_BOARD* pos);
 extern int GetPvLine(const int depth, S_BOARD* pos);
+extern void ClearPvTable(S_PVTABLE* table);
+
+// evaluate.cpp
+extern int EvalPosition(const S_BOARD* pos);
+
 
 #endif
 

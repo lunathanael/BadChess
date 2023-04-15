@@ -39,6 +39,33 @@ const int PceDir[13][8] = {
 const int NumDir[13] = { 0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8 };
 
 
+/*
+PV move
+cap -> MvvLVA  Most value victim least valuable attacker
+LVA: P, N, B, R, Q
+MVV: Q, R, B, N, P
+
+Killers
+History score
+*/
+
+const int VictimScore[13] = { 0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600 }; // Victim scores
+static int MvvLvaScores[13][13];
+
+
+// Initialization MvvLva
+void InitMvvLva() {
+	
+	int Attacker;
+	int Victim;
+	for (Attacker = wP; Attacker <= bK; ++Attacker) {
+		for (Victim = wP; Victim <= bK; ++Victim) {
+			MvvLvaScores[Victim][Attacker] = VictimScore[Victim] + 6 - (VictimScore[Attacker] / 100);
+		}
+	}
+}
+
+
 // Check for if a move exists
 int MoveExists(S_BOARD* pos, const int move) {
 	
@@ -71,14 +98,14 @@ static void AddQuietMove(const S_BOARD* pos, int move, S_MOVELIST* list) {
 // Capture move
 static void AddCaptureMove(const S_BOARD* pos, int move, S_MOVELIST* list) {
 	list->moves[list->count].move = move;
-	list->moves[list->count].score = 0;
+	list->moves[list->count].score = MvvLvaScores[CAPTURED(move)][pos->pieces[FROMSQ(move)]];
 	++list->count; // Increment list
 }
 
 // En Passant move
 static void AddEnPassantMove(const S_BOARD* pos, int move, S_MOVELIST* list) {
 	list->moves[list->count].move = move;
-	list->moves[list->count].score = 0;
+	list->moves[list->count].score = 105;
 	++list->count; // Increment list
 }
 
