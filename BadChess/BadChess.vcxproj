@@ -143,6 +143,7 @@
     <ClCompile Include="perft.cpp" />
     <ClCompile Include="pvtable.cpp" />
     <ClCompile Include="search.cpp" />
+    <ClCompile Include="uci.cpp" />
     <ClCompile Include="validate.cpp" />
   </ItemGroup>
   <ItemGroup>

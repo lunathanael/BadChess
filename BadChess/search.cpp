@@ -9,8 +9,11 @@
 
 
 // Check if the time is up or interrupt from GUI
-static void CheckUp() {
-
+static void CheckUp(S_SEARCHINFO *info) {
+	
+	if (info->timeset == TRUE && GetTimeMs() > info->stoptime) {
+		info->stopped = TRUE;
+	}
 }
 
 
@@ -81,7 +84,6 @@ static void ClearForSearch(S_BOARD* pos, S_SEARCHINFO* info) {
 	pos->ply = 0; // Set search ply to 0
 
 	// Reset search info
-	info->starttime = GetTimeMs();
 	info->stopped = 0;
 	info->nodes = 0;
 	info->fh = 0;
@@ -95,6 +97,12 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 	
 	// Valid board
 	ASSERT(CheckBoard(pos));
+
+	// Check time elapsed
+	if ((info->nodes & 2047) == 0) {
+		CheckUp(info);
+	}
+
 
 	++info->nodes; // Increment nodes
 
@@ -144,6 +152,11 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 		Score = -Quiescence(-beta, -alpha, pos, info); // Recursively call function
 		TakeMove(pos);
 
+		// Check status
+		if (info->stopped == TRUE) {
+			return 0;
+		}
+
 		// New alpha score
 		if (Score > alpha) {
 			if (Score >= beta) {
@@ -177,6 +190,11 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 	if (depth == 0) {
 		return Quiescence(alpha, beta, pos, info);
 		// return EvalPosition(pos);
+	}
+
+	// Check time elapsed
+	if ((info->nodes & 2047) == 0) {
+		CheckUp(info);
 	}
 
 	++info->nodes;
@@ -225,6 +243,11 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 		++Legal;
 		Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE); // Recursively call function
 		TakeMove(pos);
+
+		// Check status
+		if (info->stopped == TRUE) {
+			return 0;
+		}
 
 		// New alpha score
 		if (Score > alpha) {
@@ -289,23 +312,27 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 		// Start alpha beta search
 		bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, pos, info, TRUE);
 
+		// Check status
+		if (info->stopped == TRUE) {
+			break;
+		}
+
 		// Out of time
 
 		pvMoves = GetPvLine(currentDepth, pos); // Get PV line
 		bestMove = pos->pvArray[0];
 
-		printf("Depth:%d score:%d move:%s nodes:%ld ", currentDepth, bestScore, PrMove(bestMove), info->nodes);
+		printf("info score cp %d depth %d nodes %ld time %d ", bestScore, currentDepth, info->nodes, GetTimeMs() - info->starttime);
 
 		pvMoves = GetPvLine(currentDepth, pos);
-		printf("PV:");
+		printf("pv");
 		for (pvNum = 0; pvNum < pvMoves; ++pvNum) {
 			printf(" %s", PrMove(pos->pvArray[pvNum]));
 		}
 		printf("\n");
-		printf("Ordering:%.2f\n", (info->fhf / info->fh));
+		//printf("Ordering:%.2f\n", (info->fhf / info->fh));
 	}
-
-
+	printf("bestmove %s\n", PrMove(bestMove));
 
 }
 

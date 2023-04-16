@@ -2,8 +2,10 @@
 #define DEFS_H
 
 #include "stdlib.h"
+#include <vector>
 #include "cstdio" // Not sure if should be included, needed for debug
 #include <string>
+#include <map>
 
 //#define DEBUG // Comment out to run at full speed
 
@@ -135,7 +137,9 @@ typedef struct {
 typedef struct {
 
 	int starttime;
+
 	int stoptime;
+
 	int depth;
 	int depthset;
 	int timeset;
@@ -224,6 +228,9 @@ extern int PieceRookQueen[13]; // Array to return if a piece is a rook or a quee
 extern int PieceBishopQueen[13]; // Array to return if a piece is a rook or a queen
 extern int PieceSlides[13]; // Array to return if a piece slides
 
+extern std::map<char, int> char_pieces;
+extern std::map<int, char> promoted_pieces;
+
 
 /* FUNCTIONS */
 
@@ -240,10 +247,13 @@ extern U64 GeneratePosKey(const S_BOARD* pos);
 
 // board.cpp
 extern void ResetBoard(S_BOARD* pos);
-extern int ParseFen(const char* fen, S_BOARD* pos);
+
+//extern int ParseFen(const char* fen, S_BOARD* pos);
+extern void ParseFen(const std::string& command, S_BOARD* pos);
 extern void PrintBoard(const S_BOARD* pos);
 extern void UpdateListsMaterial(S_BOARD* pos);
 extern int CheckBoard(const S_BOARD* pos);
+extern void parse_moves(const std::string moves, S_BOARD* pos); // new
 
 // attack.cpp
 extern int SqAttacked(const int sq, const int side, const S_BOARD* pos);
@@ -252,7 +262,6 @@ extern int SqAttacked(const int sq, const int side, const S_BOARD* pos);
 extern char* PrSq(const int sq);
 extern char* PrMove(const int move);
 extern void PrintMoveList(const S_MOVELIST* list);
-extern int ParseMove(char* ptrChar, S_BOARD* pos);
 
 // validate.cpp
 extern int SqOnBoard(const int sq);
@@ -289,6 +298,14 @@ extern void ClearPvTable(S_PVTABLE* table);
 
 // evaluate.cpp
 extern int EvalPosition(const S_BOARD* pos);
+
+// uci.cpp
+extern void ParsePosition(const std::string& command, S_BOARD* pos);
+extern void Uci_Loop();
+extern int ParseMove(const std::string& move_string, S_BOARD* pos);
+
+// misc.cpp
+extern std::vector<std::string> split_command(const std::string& command);
 
 
 #endif

@@ -1,6 +1,21 @@
 // data.cpp
 #include "defs.h"
 
+#include <map>
+#include <string>
+
+// convert ASCII character pieces to encoded constants
+
+std::map<char, int> char_pieces = {
+    {'P', wP}, {'N', wN}, {'B', wB}, {'R', wR}, {'Q', wQ}, {'K', wK}, {'p', bP},
+    {'n', bN}, {'b', bB}, {'r', bR}, {'q', bQ}, {'k', bK}
+};
+
+//Map promoted piece to the corresponding ASCII character
+std::map<int, char> promoted_pieces = { {wQ, 'q'}, {wR, 'r'}, {wB, 'b'},
+                                       {wN, 'n'}, {bQ, 'q'}, {bR, 'r'},
+                                       {bB, 'b'}, {bN, 'n'} };
+
 char PceChar[] = ".PNBRQKpnbrqk"; // Define Array Piece to print board
 char SideChar[] = "wb-"; // Define Array Side to print board
 char RankChar[] = "12345678"; // Define Array Rank to print board

@@ -129,8 +129,23 @@ void UpdateListsMaterial(S_BOARD* pos) {
 	}
 }
 
+
+// parses the moves part of a fen string and plays all the moves included
+void parse_moves(const std::string moves, S_BOARD* pos)
+{
+	std::vector<std::string> move_tokens = split_command(moves);
+	// loop over moves within a move string
+	for (size_t i = 0; i < move_tokens.size(); i++) {
+		// parse next move
+		int move = ParseMove(move_tokens[i], pos);
+		// make move on the chess board
+		MakeMove(pos, move);
+	}
+}
+
+
 // Parse FEN string
-int ParseFen(const char *fen, S_BOARD *pos) {
+void ParseFen(const std::string& command, S_BOARD* pos) {
 
 	// Check that there is somethign to point at
 	ASSERT(fen != NULL);
@@ -148,104 +163,226 @@ int ParseFen(const char *fen, S_BOARD *pos) {
 	// Reset the board
 	ResetBoard(pos);
 
-	while ((rank >= RANK_1) && *fen) {
-		count = 1;
-		switch (*fen) {
-			// If is piece
-			case 'p': piece = bP; break;
-			case 'r': piece = bR; break;
-			case 'n': piece = bN; break;
-			case 'b': piece = bB; break;
-			case 'k': piece = bK; break;
-			case 'q': piece = bQ; break;
-			case 'P': piece = wP; break;
-			case 'R': piece = wR; break;
-			case 'N': piece = wN; break;
-			case 'B': piece = wB; break;
-			case 'K': piece = wK; break;
-			case 'Q': piece = wQ; break;
+	std::vector<std::string> tokens = split_command(command);
 
-			// Is empty Square
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-				piece = EMPTY;
-				count = *fen - '0';
-				break;
-			
-			case '/':
-			case ' ':
-				// End of pieces or new rank
-				--rank;
-				file = FILE_A;
-				++fen;
-				continue;
-
-			default:
-				printf("FEN error \n");
-				return -1;
+	const std::string pos_string = tokens.at(0);
+	const std::string turn = tokens.at(1);
+	const std::string castle_perm = tokens.at(2);
+	const std::string ep_square = tokens.at(3);
+	std::string fifty_move;
+	std::string HisPly;
+	//Keep fifty move and Hisply arguments optional
+	if (tokens.size() >= 5) {
+		fifty_move = tokens.at(4);
+		if (tokens.size() >= 6) {
+			HisPly = tokens.at(5);
+			HisPly = tokens.at(5);
 		}
-
-		// Insert empty squares
-		for (i = 0; i < count; ++i) {
-			sq64 = rank * 8 + file;
-			sq120 = SQ120(sq64);
-			if (piece != EMPTY) {
-				pos->pieces[sq120] = piece;
-			}
-			++file;
-		}
-		++fen;
 	}
 
-	// Insert turn
-	ASSERT(*fen == 'w' || *fen == 'b');
-	pos->side = (*fen == 'w') ? WHITE : BLACK;
-	fen += 2;
+	int fen_counter = 0;
+	for (int rank = RANK_8; rank >= RANK_1; --rank) {
+		// loop over board files
+		for (int file = FILE_A; file <= FILE_H; ++file) {
+			// init current square
+			const int square = rank * 8 + file;
+			const char current_char = pos_string[fen_counter];
 
-	// Set Castling rights
-	for (i = 0; i < 4; ++i) {
-		// If pointing to a space
-		if (*fen == ' ') {
+			// match ascii pieces within FEN string
+			if ((current_char >= 'a' && current_char <= 'z') || (current_char >= 'A' && current_char <= 'Z')) {
+				// init piece type
+				const int piece = char_pieces[current_char];
+				if (piece != EMPTY) {
+					sq64 = rank * 8 + file;
+					sq120 = SQ120(sq64);
+					pos->pieces[sq120] = piece;
+				}
+				++fen_counter;
+			}
+
+			// match empty square numbers within FEN string
+			if (current_char >= '0' && current_char <= '9') {
+				// init offset (convert char 0 to int 0)
+				const int offset = current_char - '1';
+				file += offset;
+				// increment pointer to FEN string
+				++fen_counter;
+			}
+
+			// match rank separator
+			if (pos_string[fen_counter] == '/')
+				// increment pointer to FEN string
+				++fen_counter;
+		}
+	}
+	//parse player turn
+	(turn == "w") ? (pos->side = WHITE) : (pos->side = BLACK);
+
+	//Parse castling rights
+	for (const char c : castle_perm) {
+		switch (c) {
+		case 'K':
+			(pos->castlePerm) |= WKCA;
+			break;
+		case 'Q':
+			(pos->castlePerm) |= WQCA;
+			break;
+		case 'k':
+			(pos->castlePerm) |= BKCA;
+			break;
+		case 'q':
+			(pos->castlePerm) |= BQCA;
+			break;
+		case '-':
 			break;
 		}
-		// Process the character being looked at
-		switch (*fen) {
-			case 'K': pos->castlePerm |= WKCA; break;
-			case 'Q': pos->castlePerm |= WQCA; break;
-			case 'k': pos->castlePerm |= BKCA; break;
-			case 'q': pos->castlePerm |= BQCA; break;
-			default: break;
-		}
-		++fen;
-	}
-	++fen;
-
-	// Set en Passant Square
-	ASSERT(pos->castlePerm >= 0 && pos->castlePerm <= 15);
-	if (*fen != '-') {
-		file = fen[0] - 'a';
-		rank = fen[1] - '1';
-
-		ASSERT(file >= FILE_A && file <= FILE_H);
-		ASSERT(rank >= RANK_1 && rank <= RANK_8);
-
-		pos->enPas = FR2SQ(file, rank);
 	}
 
-	// Generate posKey
-	pos->posKey = GeneratePosKey(pos);
+	// parse enpassant square
+	if (ep_square != "-" && ep_square.size() == 2) {
+		// parse enpassant file & rank
+		const int file = ep_square[0] - 'a';
+		const int rank = 8 - (ep_square[1] - '0');
 
-	// Update material
+		// init enpassant square
+		pos->enPas = rank * 8 + file;
+	}
+	// no enpassant square
+	else
+		pos->enPas = NO_SQ;
+
+	//Read fifty moves counter
+	if (!fifty_move.empty()) {
+		pos->fiftyMove = std::stoi(fifty_move);
+	}
+	//Read Hisply moves counter
+	if (!HisPly.empty()) {
+
+		pos->hisPly = std::stoi(HisPly);
+
+	}
 	UpdateListsMaterial(pos);
 
-	return 0;
+	pos->posKey = GeneratePosKey(pos);
+
 }
+// Parse FEN string
+//int ParseFen(const char *fen, S_BOARD *pos) {
+//
+//	// Check that there is somethign to point at
+//	ASSERT(fen != NULL);
+//	ASSERT(pos != NULL);
+//
+//	// Declare variables
+//	int rank = RANK_8; // Start from 8th Rank
+//	int file = FILE_A; // Start from A file
+//	int piece = 0;
+//	int count = 0;
+//	int i = 0;
+//	int sq64 = 0;
+//	int sq120 = 0;
+//
+//	// Reset the board
+//	ResetBoard(pos);
+//
+//	while ((rank >= RANK_1) && *fen) {
+//		count = 1;
+//		switch (*fen) {
+//			// If is piece
+//			case 'p': piece = bP; break;
+//			case 'r': piece = bR; break;
+//			case 'n': piece = bN; break;
+//			case 'b': piece = bB; break;
+//			case 'k': piece = bK; break;
+//			case 'q': piece = bQ; break;
+//			case 'P': piece = wP; break;
+//			case 'R': piece = wR; break;
+//			case 'N': piece = wN; break;
+//			case 'B': piece = wB; break;
+//			case 'K': piece = wK; break;
+//			case 'Q': piece = wQ; break;
+//
+//			// Is empty Square
+//			case '1':
+//			case '2':
+//			case '3':
+//			case '4':
+//			case '5':
+//			case '6':
+//			case '7':
+//			case '8':
+//				piece = EMPTY;
+//				count = *fen - '0';
+//				break;
+//			
+//			case '/':
+//			case ' ':
+//				// End of pieces or new rank
+//				--rank;
+//				file = FILE_A;
+//				++fen;
+//				continue;
+//
+//			default:
+//				printf("FEN error \n");
+//				return -1;
+//		}
+//
+//		// Insert empty squares
+//		for (i = 0; i < count; ++i) {
+//			sq64 = rank * 8 + file;
+//			sq120 = SQ120(sq64);
+//			if (piece != EMPTY) {
+//				pos->pieces[sq120] = piece;
+//			}
+//			++file;
+//		}
+//		++fen;
+//	}
+//
+//	// Insert turn
+//	ASSERT(*fen == 'w' || *fen == 'b');
+//	pos->side = (*fen == 'w') ? WHITE : BLACK;
+//	fen += 2;
+//
+//	// Set Castling rights
+//	for (i = 0; i < 4; ++i) {
+//		// If pointing to a space
+//		if (*fen == ' ') {
+//			break;
+//		}
+//		// Process the character being looked at
+//		switch (*fen) {
+//			case 'K': pos->castlePerm |= WKCA; break;
+//			case 'Q': pos->castlePerm |= WQCA; break;
+//			case 'k': pos->castlePerm |= BKCA; break;
+//			case 'q': pos->castlePerm |= BQCA; break;
+//			default: break;
+//		}
+//		++fen;
+//	}
+//	++fen;
+//
+//	// Set en Passant Square
+//	ASSERT(pos->castlePerm >= 0 && pos->castlePerm <= 15);
+//	if (*fen != '-') {
+//		file = fen[0] - 'a';
+//		rank = fen[1] - '1';
+//
+//		ASSERT(file >= FILE_A && file <= FILE_H);
+//		ASSERT(rank >= RANK_1 && rank <= RANK_8);
+//
+//		pos->enPas = FR2SQ(file, rank);
+//	}
+//
+//	// Generate posKey
+//	pos->posKey = GeneratePosKey(pos);
+//
+//	// Update material
+//	UpdateListsMaterial(pos);
+//
+//	return 0;
+//}
 
 // Reset the board
 void ResetBoard(S_BOARD *pos) {

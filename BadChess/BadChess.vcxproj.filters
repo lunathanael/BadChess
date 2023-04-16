@@ -66,6 +66,9 @@
     <ClCompile Include="evaluate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="uci.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BadChess.h">
