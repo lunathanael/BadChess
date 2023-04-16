@@ -78,7 +78,6 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 
 	//calculate time allocation for the move
 	if (info->timeset) {
-		info->timeset = TRUE;
 		time /= movestogo;
 		time -= 50;
 		info->stoptime = info->starttime + time + inc;
@@ -231,7 +230,7 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 			// call parse go function
 			ParseGo(input, info, pos);
 		}
-		// parse UCI "go" command
+		// parse UCI "run" command
 		else if (tokens[0] == "run") {
 			if (!parsed_position) // call parse position function
 			{
@@ -250,7 +249,6 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
 		else if (input == "stop")
 		{
-			std::cout << "WHY";
 			info->stopped = TRUE;
 		}
 

@@ -7,7 +7,7 @@
 #include <string>
 #include <map>
 
-//#define DEBUG // Comment out to run at full speed
+#define DEBUG // Comment out to run at full speed
 
 // DEBUG function
 #ifndef DEBUG

@@ -21,7 +21,7 @@ static void PickNextMove(int moveNum, S_MOVELIST* list) {
 
 	S_MOVE temp;
 	int index = 0;
-	int bestScore = 0;
+	int bestScore = -INF_BOUND;
 	int bestNum = moveNum;
 
 	// Find best score
@@ -110,14 +110,12 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 	if (IsRepetition(pos) || pos->fiftyMove >= 100) {
 		return 0;
 	}
-
 	// Max Depth
 	if (pos->ply > MAXDEPTH - 1) {
 		return EvalPosition(pos);
 	}
 
 	int Score = EvalPosition(pos);
-
 	// Standing pat
 	if (Score >= beta) {
 		return beta;
@@ -135,7 +133,6 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 	int Legal = 0;
 
 	Score = -INF_BOUND;
-
 	for (int MoveNum = 0; MoveNum < list->count; ++MoveNum) {
 
 		// Move ordering
@@ -175,6 +172,7 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 // NegaMax Alpha Beta pruning search
 static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO* info, int DoNull) {
 
+
 	// Valid board
 	ASSERT(CheckBoard(pos));
 	ASSERT(beta > alpha);
@@ -210,10 +208,6 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 	int Score = -INF_BOUND;
 	int PvMove = NOMOVE;
 
-	if (ProbeHashEntry(pos, &PvMove, &Score, alpha, beta, depth) == TRUE) {
-		++pos->HashTable->cut;
-		return Score;
-	}
 
 	// Probe hash entry
 	if (ProbeHashEntry(pos, &PvMove, &Score, alpha, beta, depth) == TRUE) {
@@ -360,47 +354,16 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 			pvMoves = GetPvLine(currentDepth, pos); // Get PV line
 			bestMove = pos->pvArray[0];
 
-
-			//if (info->GAME_MODE == UCIMODE) {
-			//	printf("info score cp %d depth %d nodes %ld time %d ",
-			//		bestScore, currentDepth, info->nodes, GetTimeMs() - info->starttime);
-			//}
-			//else if (info->POST_THINKING == TRUE) {
-			//	printf("score:%d depth:%d nodes:%ld time:%d(ms) ",
-			//		bestScore, currentDepth, info->nodes, GetTimeMs() - info->starttime);
-			//}
 			if (info->GAME_MODE == UCIMODE || info->POST_THINKING == TRUE) {
-				//pvMoves = GetPvLine(currentDepth, pos);/*
-				//if (bestScore > -MATE && bestScore < -MATE)
-				//	std::cout << "info score mate " << -(bestScore + MATE) / 2 << " depth " << currentDepth << " nodes " << info->nodes <<
-				//	" time " << GetTimeMs() - info->starttime << " pv ";
-
-				//else if (bestScore > MATE && bestScore < MATE)
-				//	std::cout << "info score mate " << (MATE - bestScore) / 2 + 1 << " depth " << currentDepth << " nodes " << info->nodes <<
-				//	" time " << GetTimeMs() - info->starttime << " pv ";
-
-				//else {
-					std::cout << "info score cp " << bestScore << " depth " << currentDepth << " nodes " << info->nodes <<
-						" time " << GetTimeMs() - info->starttime << " pv ";
-				//}
-
-				// loop over the moves within a PV line
+				std::cout << "info score cp " << bestScore << " depth " << currentDepth << " nodes " << info->nodes <<
+					" time " << GetTimeMs() - info->starttime << " pv ";
 				for (int count = 0; count < pvMoves; ++count) {
 					// print PV move
 					std::cout << PrMove(pos->pvArray[count]);
 					printf(" ");
 				}
-
-				// print new line
 				std::cout << std::endl;
 
-				//if (!(info->GAME_MODE == XBOARDMODE)) {
-				//	printf("pv");
-				//}
-				//for (pvNum = 0; pvNum < pvMoves; ++pvNum) {
-				//	printf(" %s", PrMove(pos->pvArray[pvNum]));
-				//}
-				//printf("\n");
 			}
 
 
