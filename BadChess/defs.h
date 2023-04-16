@@ -265,6 +265,7 @@ extern U64 GeneratePosKey(const S_BOARD* pos);
 
 // board.cpp
 extern void ResetBoard(S_BOARD* pos);
+extern void MirrorBoard(S_BOARD* pos);
 
 //extern int ParseFen(const char* fen, S_BOARD* pos);
 extern void ParseFen(const std::string& command, S_BOARD* pos);
@@ -286,6 +287,7 @@ extern int SideValid(const int side);
 extern int FileRankValid(const int fr);
 extern int PieceValidEmpty(const int pce);
 extern int PieceValid(const int pce);
+extern void MirrorEvalTest(S_BOARD* pos);
 
 // movegen.cpp
 extern void GenerateAllMoves(const S_BOARD* pos, S_MOVELIST* list);
