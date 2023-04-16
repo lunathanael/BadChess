@@ -33,8 +33,8 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 #define MAXPOSITIONMOVES 256 // Maximum number of moves expected in a given position
 #define MAXDEPTH 64 // Maximum depth for searching
 
-#define INFINITE 30000 // Infinte score definition
-#define ISMATE (INFINITE - MAXDEPTH)
+#define INF_BOUND 30000 // Infinte score definition
+#define ISMATE (INF_BOUND - MAXDEPTH)
 
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Starting FEN string
 
@@ -171,7 +171,6 @@ typedef struct {
 	int depthset;
 	int timeset;
 	int movestogo;
-	int infinite;
 
 	long nodes;
 
@@ -182,7 +181,7 @@ typedef struct {
 	int POST_THINKING;
 
 	float fh; // Fail high
-	float fhf; // Fail high fitst
+	float fhf; // Fail high first
 	int nullCut;
 
 } S_SEARCHINFO;

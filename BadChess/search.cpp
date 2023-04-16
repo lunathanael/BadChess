@@ -134,7 +134,7 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 	int MoveNum = 0;
 	int Legal = 0;
 
-	Score = -INFINITE;
+	Score = -INF_BOUND;
 
 	for (int MoveNum = 0; MoveNum < list->count; ++MoveNum) {
 
@@ -207,7 +207,7 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 		++depth;
 	}
 
-	int Score = -INFINITE;
+	int Score = -INF_BOUND;
 	int PvMove = NOMOVE;
 
 	if (ProbeHashEntry(pos, &PvMove, &Score, alpha, beta, depth) == TRUE) {
@@ -222,7 +222,7 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 	}
 
 	// Null move
-	if (DoNull && !InCheck && pos->ply && (pos->bigPce[pos->side] > 0) && depth >= 4) {
+	if (DoNull && !InCheck && pos->ply && (pos->bigPce[pos->side] > 1) && depth >= 4) {
 		MakeNullMove(pos);
 		Score = -AlphaBeta(-beta, -beta + 1, depth - 4, pos, info, FALSE);
 		TakeNullMove(pos);
@@ -245,8 +245,8 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 	int OldAlpha = alpha;
 	int BestMove = NOMOVE;
 
-	int BestScore = -INFINITE;
-	Score = -INFINITE;
+	int BestScore = -INF_BOUND;
+	Score = -INF_BOUND;
 
 	// Prioritize Principal variation move
 	if (PvMove != NOMOVE) {
@@ -313,7 +313,7 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 	// Checkmate and stalemate
 	if (Legal == 0) {
 		if (InCheck) {
-			return -INFINITE + pos->ply; // Checkmate
+			return -INF_BOUND + pos->ply; // Checkmate
 		}
 		else {
 			return 0; // Stalemate
@@ -337,7 +337,7 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 
 	// Define variables
 	int bestMove = NOMOVE;
-	int bestScore = -INFINITE;
+	int bestScore = -INF_BOUND;
 	int currentDepth = 0;
 	int pvMoves = 0;
 	int pvNum = 0;
@@ -349,7 +349,7 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 		for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) {
 
 			// Start alpha beta search
-			bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, pos, info, TRUE);
+			bestScore = AlphaBeta(-INF_BOUND, INF_BOUND, currentDepth, pos, info, TRUE);
 
 			// Check status
 			if (info->stopped == TRUE) {

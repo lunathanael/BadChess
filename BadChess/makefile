@@ -1,2 +1,5 @@
+SRCS=$(wildcard *.cpp)
+NAME=BadChess
+
 all:
-	g++ BadChess.cpp init.cpp bitboards.cpp hashkeys.cpp board.cpp data.cpp attack.cpp io.cpp movegen.cpp validate.cpp makemove.cpp perft.cpp search.cpp misc.cpp pvtable.cpp evaluate.cpp uci.cpp xboard.cpp -o BadChess
+	g++ $(SRCS) -o $(NAME) -o2

@@ -106,7 +106,7 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 	std::cout << "start: " << info->starttime << " ";
 	std::cout << "stop: " << info->stoptime << " ";
 	std::cout << "depth: " << info->depth << " ";
-	std::cout << "timeset: " << info->timeset << " ";
+	std::cout << "timeset: " << info->timeset << " \n";
 	
 	SearchPosition(pos, info);
 }
