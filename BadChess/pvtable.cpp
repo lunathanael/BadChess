@@ -4,10 +4,8 @@
 #include "stdio.h"
 #include "defs.h"
 
-// Set pvTable size, 2mb size
-const int PvSize = 0x100000 * 2;
-
-
+// Set pvTable size, 4mb size
+const int PvSize = 0x100000 * 4;
 
 
 // Fill PvLine array
@@ -63,7 +61,7 @@ void InitPvTable(S_PVTABLE* table) {
 	// Dynamically declare memory for array
 	table->pTable = (S_PVENTRY *) malloc(table->numEntries * sizeof(S_PVENTRY));
 	ClearPvTable(table); // Reset all keys and moves
-	printf("PvTable init complete with %d entries\n", table->numEntries);
+	//printf("PvTable init complete with %d entries\n", table->numEntries);
 
 }
 

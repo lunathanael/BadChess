@@ -26,6 +26,86 @@ U64 CastleKeys[16]; // Castle Rights, I.e: 1 0 0 1
 int FilesBrd[BRD_SQ_NUM];
 int RanksBrd[BRD_SQ_NUM];
 
+// File and rank masks
+U64 FileBBMask[8];
+U64 RankBBMask[8];
+
+// Pawn bit masks
+U64 BlackPassedMask[64];
+U64 WhitePassedMask[64];
+U64 IsolatedMask[64];
+
+// Initlization of evaluation masks
+static void InitEvalMasks() {
+
+	// Definitions
+	int sq, tsq, r, f;
+
+	// Initialize file and rank masks
+	for (sq = 0; sq < 8; ++sq) {
+		FileBBMask[sq] = 0ULL;
+		RankBBMask[sq] = 0ULL;
+	}
+
+	// Fill the masks
+	for (r = RANK_8; r >= RANK_1; --r) {
+		for (f = FILE_A; f <= FILE_H; ++f) {
+			sq = r * 8 + f;
+			FileBBMask[f] |= (1ULL << sq);
+			RankBBMask[r] |= (1ULL << sq);
+		}
+	}
+	// Clear the masks
+	for (sq = 0; sq < 64; ++sq) {
+		IsolatedMask[sq] = 0ULL;
+		WhitePassedMask[sq] = 0ULL;
+		BlackPassedMask[sq] = 0ULL;
+	}
+	// Iterate in vertical direction
+	for (sq = 0; sq < 64; ++sq) {
+		tsq = sq + 8;
+		while (tsq < 64) {
+			WhitePassedMask[sq] |= (1ULL << tsq);
+			tsq += 8;
+		}
+		tsq = sq - 8;
+		while (tsq >= 0) {
+			BlackPassedMask[sq] |= (1ULL << tsq);
+			tsq -= 8;
+		}
+		// Iterate in horizontal direciton
+		if (FilesBrd[SQ120(sq)] > FILE_A) {
+			IsolatedMask[sq] |= FileBBMask[FilesBrd[SQ120(sq)] - 1];
+			tsq = sq + 7;
+			while (tsq < 64) {
+				WhitePassedMask[sq] |= (1ULL << tsq);
+				tsq += 8;
+			}
+			tsq = sq - 9;
+			while (tsq >= 0) {
+				BlackPassedMask[sq] |= (1ULL << tsq);
+				tsq -= 8;
+			}
+		}
+		if (FilesBrd[SQ120(sq)] < FILE_H) {
+			IsolatedMask[sq] |= FileBBMask[FilesBrd[SQ120(sq)] + 1];
+			tsq = sq + 9;
+			while (tsq < 64) {
+				WhitePassedMask[sq] |= (1ULL << tsq);
+				tsq += 8;
+			}
+			tsq = sq - 7;
+			while (tsq >= 0) {
+				BlackPassedMask[sq] |= (1ULL << tsq);
+				tsq -= 8;
+			}
+		}
+	}
+
+}
+
+
+
 // Function to creat arrays to convert index to file and rank
 static void InitFilesRanksBrd() {
 	
@@ -120,5 +200,6 @@ void AllInit() {
 	InitBitMasks();
 	InitHashKeys();
 	InitFilesRanksBrd();
+	InitEvalMasks();
 	InitMvvLva();
 }

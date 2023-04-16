@@ -7,9 +7,22 @@
 
 
 
+// parses the moves part of a fen string and plays all the moves included
+static void parse_moves(const std::string moves, S_BOARD* pos)
+{
+	std::vector<std::string> move_tokens = split_command(moves);
+	// loop over moves within a move string
+	for (size_t i = 0; i < move_tokens.size(); i++) {
+		// parse next move
+		int move = ParseMove(move_tokens[i], pos);
+		// make move on the chess board
+		MakeMove(pos, move);
+	}
+}
+
 
 // parse UCI "go" command, returns true if we have to search afterwards and false otherwise
-void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
+static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 
 	
 	int depth = -1, movetime = -1; int movestogo = 30;
@@ -147,7 +160,7 @@ int ParseMove(const std::string& move_string, S_BOARD* pos) {
 
 
 // parse UCI "position" command
-void ParsePosition(const std::string& command, S_BOARD* pos) {
+static void ParsePosition(const std::string& command, S_BOARD* pos) {
 
 	// parse UCI "startpos" command
 	if (command.find("startpos") != std::string::npos) {
@@ -176,13 +189,13 @@ void ParsePosition(const std::string& command, S_BOARD* pos) {
 		std::string moves_substr = command.substr(string_start, std::string::npos);
 		parse_moves(moves_substr, pos);
 	}
-	PrintBoard(pos);
 }
 
 
 // Uci function
-void Uci_Loop() {
+void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
+	info->GAME_MODE = UCIMODE;
 
 	// Definitions
 	bool parsed_position = false;
@@ -191,11 +204,6 @@ void Uci_Loop() {
 	printf("id name %s\n", NAME);
 	printf("id author Nate\n");
 	printf("uciok\n");
-
-	// Start board
-	S_BOARD pos[1];
-	S_SEARCHINFO info[1];
-	InitPvTable(pos->PvTable);
 
 	// Main loop
 	while (TRUE) {
@@ -262,8 +270,6 @@ void Uci_Loop() {
 
 		if (info->quit) break;
 	}
-
-	free(pos->PvTable->pTable);
 }
 
 

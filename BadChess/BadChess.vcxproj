@@ -145,6 +145,7 @@
     <ClCompile Include="search.cpp" />
     <ClCompile Include="uci.cpp" />
     <ClCompile Include="validate.cpp" />
+    <ClCompile Include="xboard.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BadChess.h" />

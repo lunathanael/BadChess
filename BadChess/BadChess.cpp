@@ -3,17 +3,63 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "defs.h"
-
-#define WAC1 "r1b1k2r/ppppnppp/2n2q2/2b5/3NP3/2P1B3/PP3PPP/RN1QKB1R w KQkq - 0 1"
-#define TEST "r5rk/2p1Nppp/3p3P/pp2p1P1/4P3/2qnPQK1/8/R6R w - - 1 0"
+#include <iostream>
 
 
 int main()
 {
 	AllInit();
 
-	Uci_Loop();
 
+	// Start board
+	S_BOARD pos[1];
+	S_SEARCHINFO info[1];
+
+	info->quit = FALSE;
+	pos->PvTable->pTable = NULL;
+	InitPvTable(pos->PvTable);
+
+	printf("Welcome to BadChess! Type 'cons' for console mode...\n");
+
+	std::string input;
+
+	while (TRUE) {
+
+		// get user / GUI input
+		if (!std::getline(std::cin, input)) {
+			// continue the loop
+			break;
+		}
+
+		// make sure input is available
+		if (!input.length()) {
+			// continue the loop
+			continue;
+		}
+
+		if (input == "\n")
+			continue;
+		if (input == "uci") {
+			Uci_Loop(pos, info);
+			if (info->quit == TRUE) break;
+			continue;
+		}
+		else if (input == "xboard") {
+			XBoard_Loop(pos, info);
+			if (info->quit == TRUE) break;
+			continue;
+		}
+		else if (input == "cons") {
+			Console_Loop(pos, info);
+			if (info->quit == TRUE) break;
+			continue;
+		}
+		else if (input == "quit") {
+			break;
+		}
+	}
+
+	free(pos->PvTable->pTable);
 	return 0;
 };
 

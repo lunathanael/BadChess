@@ -130,20 +130,6 @@ void UpdateListsMaterial(S_BOARD* pos) {
 }
 
 
-// parses the moves part of a fen string and plays all the moves included
-void parse_moves(const std::string moves, S_BOARD* pos)
-{
-	std::vector<std::string> move_tokens = split_command(moves);
-	// loop over moves within a move string
-	for (size_t i = 0; i < move_tokens.size(); i++) {
-		// parse next move
-		int move = ParseMove(move_tokens[i], pos);
-		// make move on the chess board
-		MakeMove(pos, move);
-	}
-}
-
-
 // Parse FEN string
 void ParseFen(const std::string& command, S_BOARD* pos) {
 

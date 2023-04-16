@@ -42,6 +42,9 @@ enum { EMPTY, wP, wN, wB, wR, wQ, wK, bP, bN, bB, bR, bQ, bK }; // Enumerating p
 enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE }; // Enumerating Files
 enum { RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE }; // Enumerating Ranks
 enum { WHITE, BLACK, BOTH }; // Enumerating Color
+
+enum { UCIMODE, XBOARDMODE, CONSOLEMODE }; // Enumerating mode
+
 enum {
 	A1 = 21, B1, C1, D1, E1, F1, G1, H1,
 	A2 = 31, B2, C2, D2, E2, F2, G2, H2,
@@ -151,6 +154,9 @@ typedef struct {
 	int quit;
 	int stopped;
 
+	int GAME_MODE;
+	int POST_THINKING;
+
 	float fh; // Fail high
 	float fhf; // Fail high fitst
 
@@ -197,6 +203,7 @@ typedef struct {
 #define IsKN(p) (PieceKnight[ (p) ]) // Is a piece a knight
 #define IsKI(p) (PieceKing[ (p) ]) // Is a piece a king
 
+#define MIRROR64(sq) (Mirror64[(sq)]) // Mirror the square
 
 /* GLOBALS */
 
@@ -228,6 +235,17 @@ extern int PieceRookQueen[13]; // Array to return if a piece is a rook or a quee
 extern int PieceBishopQueen[13]; // Array to return if a piece is a rook or a queen
 extern int PieceSlides[13]; // Array to return if a piece slides
 
+// File and rank masks
+extern U64 FileBBMask[8];
+extern U64 RankBBMask[8];
+
+// Pawn bit masks
+extern U64 BlackPassedMask[64];
+extern U64 WhitePassedMask[64];
+extern U64 IsolatedMask[64];
+
+extern int Mirror64[64]; // Mirror a 64 indexed square
+
 extern std::map<char, int> char_pieces;
 extern std::map<int, char> promoted_pieces;
 
@@ -253,7 +271,6 @@ extern void ParseFen(const std::string& command, S_BOARD* pos);
 extern void PrintBoard(const S_BOARD* pos);
 extern void UpdateListsMaterial(S_BOARD* pos);
 extern int CheckBoard(const S_BOARD* pos);
-extern void parse_moves(const std::string moves, S_BOARD* pos); // new
 
 // attack.cpp
 extern int SqAttacked(const int sq, const int side, const S_BOARD* pos);
@@ -301,13 +318,15 @@ extern void ClearPvTable(S_PVTABLE* table);
 extern int EvalPosition(const S_BOARD* pos);
 
 // uci.cpp
-extern void ParsePosition(const std::string& command, S_BOARD* pos);
-extern void Uci_Loop();
+extern void Uci_Loop(S_BOARD* pos, S_SEARCHINFO* info);
 extern int ParseMove(const std::string& move_string, S_BOARD* pos);
 
 // misc.cpp
 extern std::vector<std::string> split_command(const std::string& command);
 
+// xboard.cpp
+extern void Console_Loop(S_BOARD* pos, S_SEARCHINFO* info);
+extern void XBoard_Loop(S_BOARD* pos, S_SEARCHINFO* info);
 
 #endif
 
