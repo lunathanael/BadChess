@@ -54,7 +54,7 @@ int main()
 			if (info->quit == TRUE) break;
 			continue;
 		}
-		else if (input == "quit") {
+		if (input == "quit") {
 			break;
 		}
 	}
