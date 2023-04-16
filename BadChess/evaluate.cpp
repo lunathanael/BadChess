@@ -67,8 +67,8 @@ const int KingE[64] = {
 	-50	,	-10	,	0	,	0	,	0	,	0	,	-10	,	-50	,
 	-10,	0	,	10	,	10	,	10	,	10	,	0	,	-10	,
 	0	,	10	,	20	,	20	,	20	,	20	,	10	,	0	,
-	0	,	10	,	20	,	40	,	40	,	20	,	10	,	0	,
-	0	,	10	,	20	,	40	,	40	,	20	,	10	,	0	,
+	0	,	10	,	20	,	30	,	30	,	20	,	10	,	0	,
+	0	,	10	,	20	,	30	,	30	,	20	,	10	,	0	,
 	0	,	10	,	20	,	20	,	20	,	20	,	10	,	0	,
 	-10,	0	,	10	,	10	,	10	,	10	,	0	,	-10	,
 	-50	,	-10	,	0	,	0	,	0	,	0	,	-10	,	-50
@@ -129,6 +129,11 @@ int EvalPosition(const S_BOARD* pos) {
 	// Material score
 	int score = pos->material[WHITE] - pos->material[BLACK];
 
+	// Draw Check
+	if (!pos->pceNum[wP] && !pos->pceNum[bP] && MaterialDraw(pos) == TRUE) {
+		return 0;
+	}
+
 	/* PSQT SCORES */
 	
 	// Pawns
@@ -172,13 +177,13 @@ int EvalPosition(const S_BOARD* pos) {
 	for (pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 		ASSERT(SqOnBoard(sq)); // Valid square
-		score += PawnTable[SQ64(sq)];
+		score += KnightTable[SQ64(sq)];
 	}
 	pce = bN;
 	for (pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 		ASSERT(SqOnBoard(sq)); // Valid square
-		score -= PawnTable[MIRROR64(SQ64(sq))];
+		score -= KnightTable[MIRROR64(SQ64(sq))];
 	}
 
 	// Bishops
@@ -186,13 +191,13 @@ int EvalPosition(const S_BOARD* pos) {
 	for (pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 		ASSERT(SqOnBoard(sq)); // Valid square
-		score += PawnTable[SQ64(sq)];
+		score += BishopTable[SQ64(sq)];
 	}
 	pce = bB;
 	for (pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 		ASSERT(SqOnBoard(sq)); // Valid square
-		score -= PawnTable[MIRROR64(SQ64(sq))];
+		score -= BishopTable[MIRROR64(SQ64(sq))];
 	}
 
 	// Rooks
@@ -200,7 +205,7 @@ int EvalPosition(const S_BOARD* pos) {
 	for (pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 		ASSERT(SqOnBoard(sq)); // Valid square
-		score += PawnTable[SQ64(sq)];
+		score += RookTable[SQ64(sq)];
 
 		// Open file
 		if (!(pos->pawns[BOTH] & FileBBMask[FilesBrd[sq]])) {
@@ -214,7 +219,7 @@ int EvalPosition(const S_BOARD* pos) {
 	for (pceNum = 0; pceNum < pos->pceNum[pce]; ++pceNum) {
 		sq = pos->pList[pce][pceNum];
 		ASSERT(SqOnBoard(sq)); // Valid square
-		score -= PawnTable[MIRROR64(SQ64(sq))];
+		score -= RookTable[MIRROR64(SQ64(sq))];
 
 		// Open file
 		if (!(pos->pawns[BOTH] & FileBBMask[FilesBrd[sq]])) {
@@ -247,10 +252,10 @@ int EvalPosition(const S_BOARD* pos) {
 
 		// Open file
 		if (!(pos->pawns[BOTH] & FileBBMask[FilesBrd[sq]])) {
-			score += QueenOpenFile; // Bonus for open file
+			score -= QueenOpenFile; // Bonus for open file
 		}
 		else if (!(pos->pawns[BLACK] & FileBBMask[FilesBrd[sq]])) {
-			score += QueenSemiOpenFile; // Bonus for semi open file
+			score -= QueenSemiOpenFile; // Bonus for semi open file
 		}
 	}
 
@@ -258,7 +263,7 @@ int EvalPosition(const S_BOARD* pos) {
 	pce = wK;
 	sq = pos->pList[pce][pceNum];
 
-	if (pos->pceNum[bQ] == 0 || (pos->material[BLACK] < ENDGAME_MAT)) {
+	if ((pos->material[BLACK] <= ENDGAME_MAT)) {
 		score += KingE[SQ64(sq)];
 	}
 	else {
@@ -267,12 +272,16 @@ int EvalPosition(const S_BOARD* pos) {
 
 	pce = bK;
 	sq = pos->pList[pce][pceNum];
-	if (pos->pceNum[wQ] == 0 || (pos->material[WHITE] < ENDGAME_MAT)) {
+	if ((pos->material[WHITE] <= ENDGAME_MAT)) {
 		score -= KingE[MIRROR64(SQ64(sq))];
 	}
 	else {
 		score -= KingO[MIRROR64(SQ64(sq))];
 	}
+
+	// Bishop pair bonus
+	if (pos->pceNum[wB] >= 2) score += BishopPair;
+	if (pos->pceNum[bB] >= 2) score -= BishopPair;
 
 	// Negate score for negamax search
 	if (pos->side == WHITE) {

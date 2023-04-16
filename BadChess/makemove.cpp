@@ -396,3 +396,57 @@ void TakeMove(S_BOARD* pos) {
 }
 
 
+// Null move for faster searching
+void MakeNullMove(S_BOARD* pos) {
+
+	ASSERT(CheckBoard(pos));
+	ASSERT(!SqAttacked(pos->KingSq[pos->side], pos->side ^ 1, pos));
+
+	++pos->ply;
+	pos->history[pos->hisPly].posKey = pos->posKey;
+
+	if (pos->enPas != NO_SQ) HASH_EP;
+
+	pos->history[pos->hisPly].move = NOMOVE;
+	pos->history[pos->hisPly].fiftyMove = pos->fiftyMove;
+	pos->history[pos->hisPly].enPas = pos->enPas;
+	pos->history[pos->hisPly].castlePerm = pos->castlePerm;
+	pos->enPas = NO_SQ;
+
+	pos->side ^= 1;
+	++pos->hisPly;
+	HASH_SIDE;
+
+	ASSERT(CheckBoard(pos));
+	ASSERT(pos->hisPly >= 0 && pos->hisPly < MAXGAMEMOVES);
+	ASSERT(pos->ply >= 0 && pos->ply < MAXDEPTH);
+
+	return;
+} // MakeNullMove
+
+
+// Undo null move
+void TakeNullMove(S_BOARD* pos) {
+	ASSERT(CheckBoard(pos));
+
+	--pos->hisPly;
+	--pos->ply;
+
+	if (pos->enPas != NO_SQ) HASH_EP;
+
+	pos->castlePerm = pos->history[pos->hisPly].castlePerm;
+	pos->fiftyMove = pos->history[pos->hisPly].fiftyMove;
+	pos->enPas = pos->history[pos->hisPly].enPas;
+
+	if (pos->enPas != NO_SQ) HASH_EP;
+	pos->side ^= 1;
+	HASH_SIDE;
+
+	ASSERT(CheckBoard(pos));
+	ASSERT(pos->hisPly >= 0 && pos->hisPly < MAXGAMEMOVES);
+	ASSERT(pos->ply >= 0 && pos->ply < MAXDEPTH);
+}
+
+
+
+

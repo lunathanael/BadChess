@@ -7,7 +7,7 @@
 #include <string>
 #include <map>
 
-//#define DEBUG // Comment out to run at full speed
+#define DEBUG // Comment out to run at full speed
 
 // DEBUG function
 #ifndef DEBUG
@@ -32,8 +32,9 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
 #define MAXPOSITIONMOVES 256 // Maximum number of moves expected in a given position
 #define MAXDEPTH 64 // Maximum depth for searching
-//#define INFINITE 30000 // Infinte score definition
-//#define ISMATE (INFINITE - MAXDEPTH)
+
+#define INFINITE 30000 // Infinte score definition
+#define ISMATE (INFINITE - MAXDEPTH)
 
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Starting FEN string
 
@@ -73,17 +74,40 @@ typedef struct {
 	int count;
 } S_MOVELIST;
 
-// Structure for principal variation entry
+
+// Hash transposition tables
+enum { HFNONE, HFALPHA, HFBETA, HFEXACT };
 typedef struct {
 	U64 posKey;
 	int move;
-} S_PVENTRY;
+	int score;
+	int depth;
+	int flags;
+}S_HASHENTRY;
 
-// Structure for pvEntry table
+
+// Structure for Hash table
 typedef struct {
-	S_PVENTRY* pTable;
+	S_HASHENTRY* pTable;
 	int numEntries;
-} S_PVTABLE;
+	int newWrite;
+	int overWrite;
+	int hit;
+	int cut;
+} S_HASHTABLE;
+
+
+//// Structure for principal variation entry
+//typedef struct {
+//	U64 posKey;
+//	int move;
+//} S_PVENTRY;
+//
+//// Structure for pvEntry table
+//typedef struct {
+//	S_PVENTRY* pTable;
+//	int numEntries;
+//} S_PVTABLE;
 
 // Stucture for Move Undo
 typedef struct {
@@ -126,7 +150,7 @@ typedef struct {
 	int pList[13][10]; // 13 Piece types, 10 possible Pieces at a time: pList[wN][0] = E1; ....
 
 	// Principal variation table
-	S_PVTABLE PvTable[1];
+	S_HASHTABLE HashTable[1];
 	int pvArray[MAXDEPTH];
 
 	int searchHistory[13][BRD_SQ_NUM]; // Track alpha beating moves
@@ -159,6 +183,7 @@ typedef struct {
 
 	float fh; // Fail high
 	float fhf; // Fail high fitst
+	int nullCut;
 
 } S_SEARCHINFO;
 
@@ -298,6 +323,8 @@ extern void GenerateAllCaptures(const S_BOARD* pos, S_MOVELIST* list);
 // makemove.cpp
 extern int MakeMove(S_BOARD* pos, int move);
 extern void TakeMove(S_BOARD* pos);
+extern void MakeNullMove(S_BOARD* pos);
+extern void TakeNullMove(S_BOARD* pos);
 
 // perft.cpp
 extern void PerfTest(int depth, S_BOARD* pos);
@@ -310,11 +337,12 @@ extern int GetTimeMs();
 extern void ReadInput(S_SEARCHINFO* info);
 
 // pvtable.cpp
-extern void InitPvTable(S_PVTABLE* table);
-extern void StorePvMove(const S_BOARD* pos, const int move);
-extern int ProbePvTable(const S_BOARD* pos);
+extern void InitHashTable(S_HASHTABLE* table, const int MB);
+extern void StoreHashEntry(S_BOARD* pos, const int move, int score, const int flags, const int depth);
+extern int ProbeHashEntry(S_BOARD* pos, int* move, int* score, int alpha, int beta, int depth);
+extern int ProbePvMove(const S_BOARD* pos);
 extern int GetPvLine(const int depth, S_BOARD* pos);
-extern void ClearPvTable(S_PVTABLE* table);
+extern void ClearHashTable(S_HASHTABLE* table);
 
 // evaluate.cpp
 extern int EvalPosition(const S_BOARD* pos);

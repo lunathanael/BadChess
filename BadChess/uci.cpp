@@ -253,6 +253,11 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 			continue;
 		}
 
+		else if (input == "stop")
+		{
+			info->stopped = TRUE;
+		}
+
 		// parse UCI "ucinewgame" command
 		else if (input == "ucinewgame") {
 			ParsePosition("position startpos\n", pos);

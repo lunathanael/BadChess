@@ -16,8 +16,8 @@ int main()
 	S_SEARCHINFO info[1];
 
 	info->quit = FALSE;
-	pos->PvTable->pTable = NULL;
-	InitPvTable(pos->PvTable);
+	pos->HashTable->pTable = NULL;
+	InitHashTable(pos->HashTable, 64);
 
 	printf("Welcome to BadChess! Type 'cons' for console mode...\n");
 
@@ -59,7 +59,7 @@ int main()
 		}
 	}
 
-	free(pos->PvTable->pTable);
+	free(pos->HashTable->pTable);
 	return 0;
 };
 

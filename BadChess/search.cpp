@@ -2,10 +2,7 @@
 
 #include "stdio.h"
 #include "defs.h"
-
-
-#define INFINITE 30000 // Infinte score definition
-#define MATE 29000 // Mate score definition
+#include <iostream>
 
 
 // Check if the time is up or interrupt from GUI
@@ -81,8 +78,9 @@ static void ClearForSearch(S_BOARD* pos, S_SEARCHINFO* info) {
 		}
 	}
 
-	// Clear prinicipal variation table
-	ClearPvTable(pos->PvTable);
+	pos->HashTable->overWrite = 0;
+	pos->HashTable->hit = 0;
+	pos->HashTable->cut = 0;
 	pos->ply = 0; // Set search ply to 0
 
 	// Reset search info
@@ -135,10 +133,8 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 	// Variable definitions
 	int MoveNum = 0;
 	int Legal = 0;
-	int OldAlpha = alpha;
-	int BestMove = NOMOVE;
+
 	Score = -INFINITE;
-	int PvMove = ProbePvTable(pos);
 
 	for (int MoveNum = 0; MoveNum < list->count; ++MoveNum) {
 
@@ -170,14 +166,8 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 				return beta;
 			}
 			alpha = Score;
-			BestMove = list->moves[MoveNum].move;
 		}
 	}
-
-	if (alpha != OldAlpha) {
-		StorePvMove(pos, BestMove);
-	}
-
 	return alpha;
 }
 
@@ -187,9 +177,10 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 
 	// Valid board
 	ASSERT(CheckBoard(pos));
-
+	ASSERT(beta > alpha);
+	ASSERT(depth >= 0);
 	// At terminal node
-	if (depth == 0) {
+	if (depth <= 0) {
 		return Quiescence(alpha, beta, pos, info);
 		// return EvalPosition(pos);
 	}
@@ -216,6 +207,35 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 		++depth;
 	}
 
+	int Score = -INFINITE;
+	int PvMove = NOMOVE;
+
+	if (ProbeHashEntry(pos, &PvMove, &Score, alpha, beta, depth) == TRUE) {
+		++pos->HashTable->cut;
+		return Score;
+	}
+
+	// Probe hash entry
+	if (ProbeHashEntry(pos, &PvMove, &Score, alpha, beta, depth) == TRUE) {
+		++pos->HashTable->cut;
+		return Score;
+	}
+
+	// Null move
+	if (DoNull && !InCheck && pos->ply && (pos->bigPce[pos->side] > 0) && depth >= 4) {
+		MakeNullMove(pos);
+		Score = -AlphaBeta(-beta, -beta + 1, depth - 4, pos, info, FALSE);
+		TakeNullMove(pos);
+		if (info->stopped == TRUE) {
+			return 0;
+		}
+
+		if (Score >= beta && abs(Score) < ISMATE) {
+			++info->nullCut;
+			return beta;
+		}
+	}
+
 	S_MOVELIST list[1];
 	GenerateAllMoves(pos, list);
 
@@ -224,14 +244,16 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 	int Legal = 0;
 	int OldAlpha = alpha;
 	int BestMove = NOMOVE;
-	int Score = -INFINITE;
-	int PvMove = ProbePvTable(pos);
+
+	int BestScore = -INFINITE;
+	Score = -INFINITE;
 
 	// Prioritize Principal variation move
 	if (PvMove != NOMOVE) {
-		for (int MoveNum = 0; MoveNum < list->count; ++MoveNum) {
+		for (MoveNum = 0; MoveNum < list->count; ++MoveNum) {
 			if (list->moves[MoveNum].move == PvMove) {
-				list->moves[MoveNum].score = 2'000'000;
+				list->moves[MoveNum].score = 2000000;
+				//printf("Pv move found \n");
 				break;
 			}
 		}
@@ -256,28 +278,34 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 			return 0;
 		}
 
-		// New alpha score
-		if (Score > alpha) {
-			if (Score >= beta) {
-				if (Legal == 1) {
-					++info->fhf; // Searched the best move first
-				}
-				++info->fh;
-
-				// Check for capture, adjust killers
-				if (!(list->moves[MoveNum].move & MFLAGCAP)) {
-					pos->searchKillers[1][pos->ply] = pos->searchKillers[0][pos->ply];
-					pos->searchKillers[0][pos->ply] = list->moves[MoveNum].move;
-				}
-
-				return beta;
-			}
-			alpha = Score;
+		// New best score
+		if (Score > BestScore) {
+			BestScore = Score;
 			BestMove = list->moves[MoveNum].move;
+			// New alpha score
+			if (Score > alpha) {
+				if (Score >= beta) {
+					if (Legal == 1) {
+						++info->fhf; // Searched the best move first
+					}
+					++info->fh;
 
-			// Check for capture, adjust Hueristic
-			if (!(list->moves[MoveNum].move & MFLAGCAP)) {
-				pos->searchHistory[pos->pieces[FROMSQ(BestMove)]][TOSQ(BestMove)] += depth; // Prioritizes moves closer to root
+					// Check for capture, adjust killers
+					if (!(list->moves[MoveNum].move & MFLAGCAP)) {
+						pos->searchKillers[1][pos->ply] = pos->searchKillers[0][pos->ply];
+						pos->searchKillers[0][pos->ply] = list->moves[MoveNum].move;
+					}
+					
+					StoreHashEntry(pos, BestMove, beta, HFBETA, depth); // Store hash entry of position
+
+					return beta;
+				}
+				alpha = Score;
+
+				// Check for capture, adjust Hueristic
+				if (!(list->moves[MoveNum].move & MFLAGCAP)) {
+					pos->searchHistory[pos->pieces[FROMSQ(BestMove)]][TOSQ(BestMove)] += depth; // Prioritizes moves closer to root
+				}
 			}
 		}
 	}
@@ -294,7 +322,10 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 
 	// Store best move for new alpha value
 	if (alpha != OldAlpha) {
-		StorePvMove(pos, BestMove);
+		StoreHashEntry(pos, BestMove, BestScore, HFEXACT, depth); // Store hash entry of position
+	}
+	else {
+		StoreHashEntry(pos, BestMove, alpha, HFALPHA, depth); // Store hash entry of position
 	}
 
 	return alpha;
@@ -314,53 +345,69 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 	ClearForSearch(pos, info); // Prepare for search
 
 	// Iterative deepening
-	for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) {
+	if (bestMove == NOMOVE) {
+		for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) {
 
-		// Start alpha beta search
-		bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, pos, info, TRUE);
+			// Start alpha beta search
+			bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth, pos, info, TRUE);
 
-		// Check status
-		if (info->stopped == TRUE) {
-			break;
-		}
-
-		// Out of time
-
-		pvMoves = GetPvLine(currentDepth, pos); // Get PV line
-		bestMove = pos->pvArray[0];
-
-
-		if (info->GAME_MODE == UCIMODE) {
-			printf("info score cp %d depth %d nodes %ld time %d ",
-				bestScore, currentDepth, info->nodes, GetTimeMs() - info->starttime);
-		}
-		else if (info->GAME_MODE == XBOARDMODE && info->POST_THINKING == TRUE) {
-			printf("%d %d %d %ld ",
-				currentDepth, bestScore, (GetTimeMs() - info->starttime) / 10, info->nodes);
-		}
-		else if (info->POST_THINKING == TRUE) {
-			printf("score:%d depth:%d nodes:%ld time:%d(ms) ",
-				bestScore, currentDepth, info->nodes, GetTimeMs() - info->starttime);
-		}
-		if (info->GAME_MODE == UCIMODE || info->POST_THINKING == TRUE) {
-			pvMoves = GetPvLine(currentDepth, pos);
-			if (!(info->GAME_MODE == XBOARDMODE)) {
-				printf("pv");
+			// Check status
+			if (info->stopped == TRUE) {
+				break;
 			}
-			for (pvNum = 0; pvNum < pvMoves; ++pvNum) {
-				printf(" %s", PrMove(pos->pvArray[pvNum]));
+
+
+			pvMoves = GetPvLine(currentDepth, pos); // Get PV line
+			bestMove = pos->pvArray[0];
+
+
+			//if (info->GAME_MODE == UCIMODE) {
+			//	printf("info score cp %d depth %d nodes %ld time %d ",
+			//		bestScore, currentDepth, info->nodes, GetTimeMs() - info->starttime);
+			//}
+			//else if (info->POST_THINKING == TRUE) {
+			//	printf("score:%d depth:%d nodes:%ld time:%d(ms) ",
+			//		bestScore, currentDepth, info->nodes, GetTimeMs() - info->starttime);
+			//}
+			if (info->GAME_MODE == UCIMODE || info->POST_THINKING == TRUE) {
+				//pvMoves = GetPvLine(currentDepth, pos);/*
+				//if (bestScore > -MATE && bestScore < -MATE)
+				//	std::cout << "info score mate " << -(bestScore + MATE) / 2 << " depth " << currentDepth << " nodes " << info->nodes <<
+				//	" time " << GetTimeMs() - info->starttime << " pv ";
+
+				//else if (bestScore > MATE && bestScore < MATE)
+				//	std::cout << "info score mate " << (MATE - bestScore) / 2 + 1 << " depth " << currentDepth << " nodes " << info->nodes <<
+				//	" time " << GetTimeMs() - info->starttime << " pv ";
+
+				//else {
+					std::cout << "info score cp " << bestScore << " depth " << currentDepth << " nodes " << info->nodes <<
+						" time " << GetTimeMs() - info->starttime << " pv ";
+				//}
+
+				// loop over the moves within a PV line
+				for (int count = 0; count < pvMoves; ++count) {
+					// print PV move
+					std::cout << PrMove(pos->pvArray[count]);
+					printf(" ");
+				}
+
+				// print new line
+				std::cout << std::endl;
+
+				//if (!(info->GAME_MODE == XBOARDMODE)) {
+				//	printf("pv");
+				//}
+				//for (pvNum = 0; pvNum < pvMoves; ++pvNum) {
+				//	printf(" %s", PrMove(pos->pvArray[pvNum]));
+				//}
+				//printf("\n");
 			}
-			printf("\n");
+
+
 		}
-
-
 	}
 	if (info->GAME_MODE == UCIMODE) {
 		printf("bestmove %s\n", PrMove(bestMove));
-	}
-	else if (info->GAME_MODE == XBOARDMODE) {
-		printf("move %s\n", PrMove(bestMove));
-		MakeMove(pos, bestMove);
 	}
 	else {
 		printf("\n\n***!! BadChess makes move %s !!***\n\n", PrMove(bestMove));

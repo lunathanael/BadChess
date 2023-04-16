@@ -369,7 +369,7 @@ void Console_Loop(S_BOARD* pos, S_SEARCHINFO* info) {
 		}
 
 		if (!strcmp(command, "new")) {
-			ClearPvTable(pos->PvTable);
+			ClearHashTable(pos->HashTable);
 			engineSide = BLACK;
 			ParseFen(START_FEN, pos);
 			continue;

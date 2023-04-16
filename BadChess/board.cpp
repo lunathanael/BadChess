@@ -134,7 +134,6 @@ void UpdateListsMaterial(S_BOARD* pos) {
 void ParseFen(const std::string& command, S_BOARD* pos) {
 
 	// Check that there is somethign to point at
-	ASSERT(fen != NULL);
 	ASSERT(pos != NULL);
 
 	// Declare variables
