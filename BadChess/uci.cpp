@@ -38,12 +38,6 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 			;
 		}
 
-		//if (tokens.at(1) == "perft") {
-		//	int perft_depth = std::stoi(tokens[2]);
-		//	PerftTest(perft_depth, pos);
-		//	return false;
-		//}
-
 		if (tokens.at(i) == "binc" && pos->side == BLACK) {
 			inc = std::stoi(tokens[i + 1]);
 		}
@@ -77,11 +71,6 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 		if (tokens.at(i) == "depth") {
 			depth = std::stoi(tokens[i + 1]);
 		}
-
-		//if (tokens.at(i) == "nodes") {
-		//	info->nodeset = true;
-		//	info->nodeslimit = std::stoi(tokens[i + 1]);
-		//}
 	}
 
 	info->starttime = GetTimeMs();
@@ -89,16 +78,16 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 
 	//calculate time allocation for the move
 	if (info->timeset) {
-
+		info->timeset = TRUE;
+		time /= movestogo;
+		time -= 50;
+		info->stoptime = info->starttime + time + inc;
 	}
 
 	int safety_overhead = 50;
 
 	if (depth == -1) {
 		info->depth = MAXDEPTH;
-		time /= movestogo;
-		time -= safety_overhead;
-		info->stoptime = info->starttime + time + inc;
 	}
 
 	std::cout << "info ";
@@ -235,15 +224,21 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
 		// parse UCI "go" command
 		else if (tokens[0] == "go") {
-			 
-
 			if (!parsed_position) // call parse position function
 			{
 				ParsePosition("position startpos", pos);
 			}
 			// call parse go function
 			ParseGo(input, info, pos);
-
+		}
+		// parse UCI "go" command
+		else if (tokens[0] == "run") {
+			if (!parsed_position) // call parse position function
+			{
+				ParsePosition("position startpos", pos);
+			}
+			// call parse go function
+			ParseGo("go infinite", info, pos);
 		}
 
 		// parse UCI "isready" command
@@ -255,6 +250,7 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
 		else if (input == "stop")
 		{
+			std::cout << "WHY";
 			info->stopped = TRUE;
 		}
 
