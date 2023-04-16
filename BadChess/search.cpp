@@ -14,6 +14,8 @@ static void CheckUp(S_SEARCHINFO *info) {
 	if (info->timeset == TRUE && GetTimeMs() > info->stoptime) {
 		info->stopped = TRUE;
 	}
+
+	ReadInput(info); // Check if input is waiting
 }
 
 

@@ -288,6 +288,7 @@ extern void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info);
 
 // misc.cpp
 extern int GetTimeMs();
+extern void ReadInput(S_SEARCHINFO* info);
 
 // pvtable.cpp
 extern void InitPvTable(S_PVTABLE* table);
