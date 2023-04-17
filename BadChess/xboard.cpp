@@ -344,6 +344,12 @@ void Console_Loop(S_BOARD* pos, S_SEARCHINFO* info) {
 		if (!strcmp(command, "force")) {
 			engineSide = BOTH;
 			continue;
+		}	
+		
+		if (!strcmp(command, "polykey")) {
+			PrintBoard(pos);
+			GetBookMove(pos);
+			continue;
 		}
 
 		if (!strcmp(command, "view")) {

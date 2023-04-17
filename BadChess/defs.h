@@ -7,7 +7,7 @@
 #include <string>
 #include <map>
 
-#define DEBUG // Comment out to run at full speed
+//#define DEBUG // Comment out to run at full speed
 
 // DEBUG function
 #ifndef DEBUG
@@ -32,6 +32,7 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
 #define MAXPOSITIONMOVES 256 // Maximum number of moves expected in a given position
 #define MAXDEPTH 64 // Maximum depth for searching
+#define MAX_HASH 2048
 
 #define INF_BOUND 30000 // Infinte score definition
 #define ISMATE (INF_BOUND - MAXDEPTH)
@@ -73,6 +74,13 @@ typedef struct {
 	S_MOVE moves[MAXPOSITIONMOVES];
 	int count;
 } S_MOVELIST;
+
+
+// Engine options
+typedef struct {
+	int UseBook;
+} S_OPTIONS;
+
 
 
 // Hash transposition tables
@@ -273,6 +281,8 @@ extern int Mirror64[64]; // Mirror a 64 indexed square
 extern std::map<char, int> char_pieces;
 extern std::map<int, char> promoted_pieces;
 
+extern S_OPTIONS EngineOptions[1];
+
 
 /* FUNCTIONS */
 
@@ -357,6 +367,13 @@ extern std::vector<std::string> split_command(const std::string& command);
 extern void Console_Loop(S_BOARD* pos, S_SEARCHINFO* info);
 extern void XBoard_Loop(S_BOARD* pos, S_SEARCHINFO* info);
 
+// polybook.cpp
+extern void CleanPolyBook();
+extern void InitPolyBook();
+extern int GetBookMove(S_BOARD* board);
+
+
 #endif
+
 
 

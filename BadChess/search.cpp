@@ -338,6 +338,10 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 
 	ClearForSearch(pos, info); // Prepare for search
 
+	if (EngineOptions->UseBook == TRUE) {
+		bestMove = GetBookMove(pos);
+	}
+
 	// Iterative deepening
 	if (bestMove == NOMOVE) {
 		for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) {

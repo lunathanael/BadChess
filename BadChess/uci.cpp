@@ -187,10 +187,14 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
 	// Definitions
 	bool parsed_position = false;
+	int MB = 64;
+
 
 	// Start uci
 	printf("id name %s\n", NAME);
 	printf("id author Nate\n");
+	printf("option name Hash type spin default 64 min 4 max %d\n", MAX_HASH);
+	printf("option name Book type check default true\n");
 	printf("uciok\n");
 
 	// Main loop
@@ -260,6 +264,29 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 		else if (input == "quit") {
 			info->quit = TRUE;
 			break;
+		}
+		else if (tokens[0] == "setoption") {
+			//check tokens for size to see if we have a value
+			if (tokens.size() < 5) {
+				std::cout << "Invalid setoption format" << "\n";
+				continue;
+			}
+			if (tokens.at(2) == "Hash") {
+				MB = std::stoi(tokens.at(4));
+				if (MB < 4) MB = 4;
+				if (MB > MAX_HASH) MB = MAX_HASH;
+				printf("Set Hash to %d MB\n", MB);
+				InitHashTable(pos->HashTable, MB);
+			}
+			else if (tokens.at(2) == "Book") {
+				if (tokens.at(4) == "true") {
+					EngineOptions->UseBook = TRUE;
+				}
+				else {
+					EngineOptions->UseBook = FALSE;
+				}
+			}
+			else std::cout << "Unknown command: " << input << std::endl;
 		}
 		else if (input == "uci") {
 			printf("id name %s\n", NAME);

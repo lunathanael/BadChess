@@ -35,6 +35,9 @@ U64 BlackPassedMask[64];
 U64 WhitePassedMask[64];
 U64 IsolatedMask[64];
 
+// Engine options
+S_OPTIONS EngineOptions[1];
+
 // Initlization of evaluation masks
 static void InitEvalMasks() {
 
@@ -202,4 +205,5 @@ void AllInit() {
 	InitFilesRanksBrd();
 	InitEvalMasks();
 	InitMvvLva();
+	InitPolyBook();
 }

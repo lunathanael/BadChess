@@ -141,6 +141,8 @@
     <ClCompile Include="movegen.cpp" />
     <ClCompile Include="makemove.cpp" />
     <ClCompile Include="perft.cpp" />
+    <ClCompile Include="polybook.cpp" />
+    <ClCompile Include="polykeys.cpp" />
     <ClCompile Include="pvtable.cpp" />
     <ClCompile Include="search.cpp" />
     <ClCompile Include="uci.cpp" />
@@ -150,6 +152,7 @@
   <ItemGroup>
     <ClInclude Include="BadChess.h" />
     <ClInclude Include="defs.h" />
+    <ClInclude Include="polykeys.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

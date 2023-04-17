@@ -3,10 +3,11 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "defs.h"
+#include <cstring> 
 #include <iostream>
 
 
-int main()
+int main(int argc, char *argv[])
 {
 	AllInit();
 
@@ -22,6 +23,15 @@ int main()
 	printf("Welcome to BadChess! Type 'cons' for console mode...\n");
 
 	std::string input;
+	setbuf(stdin, NULL);
+	setbuf(stdout, NULL);
+
+	int ArgNum = 0;
+	for (ArgNum = 0; ArgNum < argc; ++ArgNum) {
+		if (strncmp(argv[ArgNum], "NoBook", 6) == 0) {
+			EngineOptions->UseBook = FALSE;
+		}
+	}
 
 	while (TRUE) {
 
@@ -59,7 +69,9 @@ int main()
 		}
 	}
 
+	// Clean allocated memory
 	free(pos->HashTable->pTable);
+	CleanPolyBook();
 	return 0;
 };
 
