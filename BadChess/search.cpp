@@ -3,6 +3,7 @@
 #include "stdio.h"
 #include "defs.h"
 #include <iostream>
+#include <algorithm>
 
 
 // Check if the time is up or interrupt from GUI
@@ -264,7 +265,20 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 		}
 
 		++Legal;
-		Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE); // Recursively call function
+
+		// TRYING Late Move Reduction
+		if (MoveNum >= 5 and depth > 2 and not InCheck and !(list->moves[MoveNum].move & MFLAGCAP)) {
+			Score = -AlphaBeta(-beta, -alpha, depth - 2, pos, info, TRUE);
+			if (alpha < Score) {
+				Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
+			}
+		}
+		else {
+			Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
+		}
+
+
+		//Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE); // Recursively call function
 		TakeMove(pos);
 
 		// Check status
