@@ -50,7 +50,7 @@ History score
 */
 
 const int VictimScore[13] = { 0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600 }; // Victim scores
-static int MvvLvaScores[13][13];
+int MvvLvaScores[13][13];
 
 
 // Initialization MvvLva
@@ -97,16 +97,16 @@ static void AddQuietMove(const S_BOARD* pos, int move, S_MOVELIST* list) {
 
 	list->moves[list->count].move = move;
 	
-	// Score killer moves
-	if (pos->searchKillers[0][pos->ply] == move) {
-		list->moves[list->count].score = 900'000;
-	}
-	else if (pos->searchKillers[1][pos->ply] == move) {
-		list->moves[list->count].score = 800'000;
-	}
-	else {
-		list->moves[list->count].score = pos->searchHistory[pos->pieces[FROMSQ(move)]][TOSQ(move)];
-	}
+	//// Score killer moves
+	//if (pos->searchKillers[0][pos->ply] == move) {
+	//	list->moves[list->count].score = 900'000;
+	//}
+	//else if (pos->searchKillers[1][pos->ply] == move) {
+	//	list->moves[list->count].score = 800'000;
+	//}
+	//else {
+	//	list->moves[list->count].score = pos->searchHistory[pos->pieces[FROMSQ(move)]][TOSQ(move)];
+	//}
 
 	++list->count; // Increment list
 }
@@ -120,7 +120,7 @@ static void AddCaptureMove(const S_BOARD* pos, int move, S_MOVELIST* list) {
 	ASSERT(PieceValid(CAPTURED(move)));
 
 	list->moves[list->count].move = move;
-	list->moves[list->count].score = MvvLvaScores[CAPTURED(move)][pos->pieces[FROMSQ(move)]] + 1'000'000;
+	//list->moves[list->count].score = MvvLvaScores[CAPTURED(move)][pos->pieces[FROMSQ(move)]] + 1'000'000;
 	++list->count; // Increment list
 }
 
@@ -132,7 +132,7 @@ static void AddEnPassantMove(const S_BOARD* pos, int move, S_MOVELIST* list) {
 	ASSERT(SqOnBoard(TOSQ(move)));
 
 	list->moves[list->count].move = move;
-	list->moves[list->count].score = 105 + 1000000;
+	//list->moves[list->count].score = 105 + 1000000;
 	++list->count; // Increment list
 }
 

@@ -276,6 +276,8 @@ extern U64 BlackPassedMask[64];
 extern U64 WhitePassedMask[64];
 extern U64 IsolatedMask[64];
 
+extern int MvvLvaScores[13][13];
+
 extern int Mirror64[64]; // Mirror a 64 indexed square
 
 extern std::map<char, int> char_pieces;
