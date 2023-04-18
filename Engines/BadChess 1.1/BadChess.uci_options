@@ -1,0 +1,4 @@
+id name BadChess
+id author Nate
+option name Hash type spin default 64 min 4 max 2048
+option name Book type check default true
