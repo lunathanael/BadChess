@@ -34,6 +34,7 @@ U64 RankBBMask[8];
 U64 BlackPassedMask[64];
 U64 WhitePassedMask[64];
 U64 IsolatedMask[64];
+// Add doubled pawns mask?
 
 // Engine options
 S_OPTIONS EngineOptions[1];
@@ -109,7 +110,7 @@ static void InitEvalMasks() {
 
 
 
-// Function to creat arrays to convert index to file and rank
+// Function to create arrays to convert index to file and rank
 static void InitFilesRanksBrd() {
 	
 	// Define Indices
