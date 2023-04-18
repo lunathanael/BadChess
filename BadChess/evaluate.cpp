@@ -6,28 +6,31 @@
 
 
 const int IsolatedPawn = -10; // Penalty for isolate pawn
-const int PassedPawn[8] = { 0, 5, 10, 20, 35, 60, 100, 200 }; // Bonus for passed pawn indexed by rank
-const int RookOpenFile = 5; // Bonus for rook on open file
-const int RookSemiOpenFile = 5;
+const int PassedPawn[8][2] = { {0, 0}, {2, 38}, {15, 36}, {22, 50}, {64, 81}, {166, 184}, {284, 269} }; // Bonus for passed pawn indexed by rank
+const int RookOpenFile[2] = { 49, 26 }; // Bonus for rook on open file
+const int RookSemiOpenFile[2] = { 18, 8 };
 const int QueenOpenFile = 5;
 const int QueenSemiOpenFile = 3;
 const int BishopPair = 30;
 
 // Endgame material for king activation
 #define ENDGAME_MAT (1 * PieceVal[wR] + 2 * PieceVal[wN] + 2 * PieceVal[wP] + PieceVal[wK])
+//gamePhase = Phase(((npm - EndgameLimit) * PHASE_MIDGAME) / (MidgameLimit - EndgameLimit));
+//int16_t gamePhase;
 
 
-/* PIECE SQUARE TABLES in pawns/100 */
 
-const int PawnTable[64] = {
-0	,	0	,	0	,	0	,	0	,	0	,	0	,	0	,
-10	,	10	,	0	,	-10	,	-10	,	0	,	10	,	10	,
-5	,	0	,	0	,	5	,	5	,	0	,	0	,	5	,
-0	,	0	,	10	,	20	,	20	,	10	,	0	,	0	,
-5	,	5	,	5	,	10	,	10	,	5	,	5	,	5	,
-10	,	10	,	10	,	20	,	20	,	10	,	10	,	10	,
-20	,	20	,	20	,	30	,	30	,	20	,	20	,	20	,
-0	,	0	,	0	,	0	,	0	,	0	,	0	,	0
+/* PIECE SQUARE TABLES in Hundreths of a pawn */
+
+const int PawnTable[64][2] = {
+{0, 0}	,	{0, 0}	,	{0, 0}	,	{0, 0}	,{0, 0}	,	{0, 0},	{0, 0}	,	{0, 0},
+   {2, -8}, {4, -6}, {11,  9}, {18,  5}, {16, 16}, {21,  6}, {9, -6}, {-3,-18} ,
+    {-9, -9}, {-15, -7}, {11,-10}, {15,  5}, {31,  2}, {23,  3}, {6, -8}, {-20, -5} ,
+    {-3,  7}, {-20,  1}, {8, -8}, {19, -2}, {39,-14}, {17,-13}, {2,-11}, {-5, -6} ,
+    {11, 12}, {-4,  6}, {-11,  2}, {2, -6}, {11, -5}, {0, -4}, {-12, 14}, {5,  9} ,
+    {3, 27}, {-11, 18}, {-6, 19}, {22, 29}, {-8, 30}, {-5,  9}, {-14,  8}, {-11, 14} ,
+    {-7, -1}, {6,-14}, {-2, 13}, {-11, 22}, {4, 24}, {-14, 17}, {10,  7}, {-9,  7} ,
+{0, 0}	,	{0, 0}	,	{0, 0}	,	{0, 0}	,{0, 0}	,	{0, 0},	{0, 0}	,	{0, 0}
 };
 
 const int KnightTable[64] = {
@@ -53,7 +56,7 @@ const int BishopTable[64] = {
 };
 
 const int RookTable[64] = {
-0	,	0	,	5	,	10	,	10	,	5	,	0	,	0	,
+0	,	0	,	5	,	10	,	11	,	5	,	0	,	0	,
 0	,	0	,	5	,	10	,	10	,	5	,	0	,	0	,
 0	,	0	,	5	,	10	,	10	,	5	,	0	,	0	,
 0	,	0	,	5	,	10	,	10	,	5	,	0	,	0	,
@@ -125,9 +128,23 @@ int EvalPosition(const S_BOARD* pos) {
 	int pce;
 	int pceNum;
 	int sq;
+	int weg; // White middle game
+	int beg; // Black middle game
 
 	// Material score
 	int score = pos->material[WHITE] - pos->material[BLACK];
+	if ((pos->material[BLACK] <= ENDGAME_MAT)) {
+		weg = TRUE;
+	}
+	else {
+		weg = FALSE;
+	}
+	if ((pos->material[WHITE] <= ENDGAME_MAT)) {
+		beg = TRUE;
+	}
+	else {
+		beg = FALSE;
+	}
 
 	// Draw Check
 	if (!pos->pceNum[wP] && !pos->pceNum[bP] && MaterialDraw(pos) == TRUE) {
@@ -142,7 +159,7 @@ int EvalPosition(const S_BOARD* pos) {
 		sq = pos->pList[pce][pceNum];
 		ASSERT(SqOnBoard(sq));
 		ASSERT(SQ64(sq) >= 0 && SQ64(sq) <= 63);
-		score += PawnTable[SQ64(sq)];
+		score += PawnTable[SQ64(sq)][weg];
 
 		if ((IsolatedMask[SQ64(sq)] & pos->pawns[WHITE]) == 0) {
 			//printf("wP Iso:%s\n",PrSq(sq));
@@ -151,7 +168,7 @@ int EvalPosition(const S_BOARD* pos) {
 
 		if ((WhitePassedMask[SQ64(sq)] & pos->pawns[BLACK]) == 0) {
 			//printf("wP Passed:%s\n",PrSq(sq));
-			score += PassedPawn[RanksBrd[sq]];
+			score += PassedPawn[RanksBrd[sq]][weg];
 		}
 
 	}
@@ -161,7 +178,7 @@ int EvalPosition(const S_BOARD* pos) {
 		sq = pos->pList[pce][pceNum];
 		ASSERT(SqOnBoard(sq));
 		ASSERT(MIRROR64(SQ64(sq)) >= 0 && MIRROR64(SQ64(sq)) <= 63);
-		score -= PawnTable[MIRROR64(SQ64(sq))];
+		score -= PawnTable[MIRROR64(SQ64(sq))][beg];
 
 		if ((IsolatedMask[SQ64(sq)] & pos->pawns[BLACK]) == 0) {
 			//printf("bP Iso:%s\n",PrSq(sq));
@@ -170,7 +187,7 @@ int EvalPosition(const S_BOARD* pos) {
 
 		if ((BlackPassedMask[SQ64(sq)] & pos->pawns[WHITE]) == 0) {
 			//printf("bP Passed:%s\n",PrSq(sq));
-			score -= PassedPawn[7 - RanksBrd[sq]];
+			score -= PassedPawn[7 - RanksBrd[sq]][beg];
 		}
 	}
 
@@ -219,10 +236,10 @@ int EvalPosition(const S_BOARD* pos) {
 		ASSERT(FileRankValid(FilesBrd[sq]));
 
 		if (!(pos->pawns[BOTH] & FileBBMask[FilesBrd[sq]])) {
-			score += RookOpenFile;
+			score += RookOpenFile[weg];
 		}
 		else if (!(pos->pawns[WHITE] & FileBBMask[FilesBrd[sq]])) {
-			score += RookSemiOpenFile;
+			score += RookSemiOpenFile[weg];
 		}
 	}
 
@@ -234,10 +251,10 @@ int EvalPosition(const S_BOARD* pos) {
 		score -= RookTable[MIRROR64(SQ64(sq))];
 		ASSERT(FileRankValid(FilesBrd[sq]));
 		if (!(pos->pawns[BOTH] & FileBBMask[FilesBrd[sq]])) {
-			score -= RookOpenFile;
+			score -= RookOpenFile[beg];
 		}
 		else if (!(pos->pawns[BLACK] & FileBBMask[FilesBrd[sq]])) {
-			score -= RookSemiOpenFile;
+			score -= RookSemiOpenFile[beg];
 		}
 	}
 
