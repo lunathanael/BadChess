@@ -12,7 +12,7 @@ static void parse_moves(const std::string moves, S_BOARD* pos)
 {
 	std::vector<std::string> move_tokens = split_command(moves);
 	// loop over moves within a move string
-	for (size_t i = 0; i < move_tokens.size(); i++) {
+	for (size_t i = 0; i < move_tokens.size(); ++i) {
 		// parse next move
 		int move = ParseMove(move_tokens[i], pos);
 		// make move on the chess board
@@ -25,14 +25,14 @@ static void parse_moves(const std::string moves, S_BOARD* pos)
 static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 
 	
-	int depth = -1, movetime = -1; int movestogo = 30;
+	int depth = -1, movetime = -1; int movestogo = 50;
 	int time = -1; int inc = 0;
 	info->timeset = FALSE;
 
 	std::vector<std::string> tokens = split_command(line);
 
 	//loop over all the tokens and parse the commands
-	for (size_t i = 1; i < tokens.size(); i++) {
+	for (size_t i = 1; i < tokens.size(); ++i) {
 
 		if (tokens.at(1) == "infinite") {
 			;
