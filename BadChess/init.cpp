@@ -34,7 +34,7 @@ U64 RankBBMask[8];
 U64 BlackPassedMask[64];
 U64 WhitePassedMask[64];
 U64 IsolatedMask[64];
-// Add doubled pawns mask?
+U64 DoubledMask[64];
 
 // Engine options
 S_OPTIONS EngineOptions[1];
@@ -64,17 +64,20 @@ static void InitEvalMasks() {
 		IsolatedMask[sq] = 0ULL;
 		WhitePassedMask[sq] = 0ULL;
 		BlackPassedMask[sq] = 0ULL;
+		DoubledMask[sq] = 0ULL;
 	}
 	// Iterate in vertical direction
 	for (sq = 0; sq < 64; ++sq) {
 		tsq = sq + 8;
 		while (tsq < 64) {
 			WhitePassedMask[sq] |= (1ULL << tsq);
+			DoubledMask[sq] |= FileBBMask[FilesBrd[SQ120(sq)]];
 			tsq += 8;
 		}
 		tsq = sq - 8;
 		while (tsq >= 0) {
 			BlackPassedMask[sq] |= (1ULL << tsq);
+			DoubledMask[sq] |= FileBBMask[FilesBrd[SQ120(sq)]];
 			tsq -= 8;
 		}
 		// Iterate in horizontal direciton

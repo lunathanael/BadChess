@@ -6,6 +6,7 @@
 
 
 const int IsolatedPawn = -10; // Penalty for isolate pawn
+const int DoubledPawns = -10; // Penalty for doubled pawns
 const int PassedPawn[8] = { 0, 5, 10, 20, 35, 60, 100, 200 }; // Bonus for passed pawn indexed by rank
 const int RookOpenFile = 5; // Bonus for rook on open file
 const int RookSemiOpenFile = 5;
@@ -149,6 +150,11 @@ int EvalPosition(const S_BOARD* pos) {
 			score += IsolatedPawn;
 		}
 
+		if ((DoubledMask[SQ64(sq)] & pos->pawns[WHITE]) != 0) {
+			//printf("wP Iso:%s\n",PrSq(sq));
+			score += DoubledPawns;
+		}
+
 		if ((WhitePassedMask[SQ64(sq)] & pos->pawns[BLACK]) == 0) {
 			//printf("wP Passed:%s\n",PrSq(sq));
 			score += PassedPawn[RanksBrd[sq]];
@@ -166,6 +172,11 @@ int EvalPosition(const S_BOARD* pos) {
 		if ((IsolatedMask[SQ64(sq)] & pos->pawns[BLACK]) == 0) {
 			//printf("bP Iso:%s\n",PrSq(sq));
 			score -= IsolatedPawn;
+		}
+
+		if ((DoubledMask[SQ64(sq)] & pos->pawns[BLACK]) != 0) {
+			//printf("wP Iso:%s\n",PrSq(sq));
+			score += DoubledPawns;
 		}
 
 		if ((BlackPassedMask[SQ64(sq)] & pos->pawns[WHITE]) == 0) {

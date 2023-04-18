@@ -275,6 +275,7 @@ extern U64 RankBBMask[8];
 extern U64 BlackPassedMask[64];
 extern U64 WhitePassedMask[64];
 extern U64 IsolatedMask[64];
+extern U64 DoubledMask[64];
 
 extern int Mirror64[64]; // Mirror a 64 indexed square
 
