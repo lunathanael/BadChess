@@ -6,11 +6,6 @@
 #include <algorithm>
 
 
-// For LMR
-const int FullDepthMoves = 4;
-const int ReductionLimit = 3;
-
-
 // Check if the time is up or interrupt from GUI
 static void CheckUp(S_SEARCHINFO *info) {
 	
@@ -272,20 +267,14 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 		++Legal;
 
 		// TRYING Late Move Reduction
-		if (MoveNum == 0) { // First move, use full-window search
-			Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
+		if (MoveNum >= 5 and depth > 2 and not InCheck and !(list->moves[MoveNum].move & MFLAGCAP)) {
+			Score = -AlphaBeta(-beta, -alpha, depth - 2, pos, info, TRUE);
+			if (alpha < Score) {
+				Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
+			}
 		}
 		else {
-			if (MoveNum >= FullDepthMoves && depth >= ReductionLimit and not (InCheck or list->moves[MoveNum].move & MFLAGCAP)) {
-				Score = -AlphaBeta(-beta, -alpha, depth - 2, pos, info, TRUE);
-			}
-			else Score = alpha + 1;// Hack to ensure that full-depth search is done.
-
-			if (Score > alpha) {
-				Score = -AlphaBeta(-(alpha + 1), -alpha, depth - 1, pos, info, TRUE); // Research with full window
-				if (Score > alpha && Score < beta)
-					Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
-			}
+			Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
 		}
 
 
@@ -351,52 +340,6 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 }
 
 
-int AspirationWindowSearch(int prev_eval, int depth, S_BOARD *pos, S_SEARCHINFO *info) {
-	int Score = 0;
-
-	//We set an expected window for the score at the next search depth, this window is not 100% accurate so we might need to try a bigger window and re-search the position
-	int delta = 50;
-	// define initial alpha beta bounds
-	int alpha = -INF_BOUND;
-	int beta = INF_BOUND;
-
-	// only set up the windows is the search depth is bigger or equal than Aspiration_Depth to avoid using windows when the search isn't accurate enough
-	if (depth >= 3) {
-		alpha = std::max(-INF_BOUND, prev_eval - delta);
-		beta = std::min(prev_eval + delta, INF_BOUND);
-	}
-
-	//Stay at current depth if we fail high/low because of the aspiration windows
-	while (true) {
-		Score = AlphaBeta(alpha, beta, depth, pos, info, TRUE);
-
-		// Check time elapsed
-		if ((info->nodes & 2047) == 0) {
-			CheckUp(info);
-		}
-
-		// stop calculating and return best move so far
-		if (info->stopped) break;
-
-		// we fell outside the window, so try again with a bigger window, if we still fail after we just search with a full window
-		if ((Score <= alpha)) {
-			beta = (alpha + beta) / 2;
-			alpha = std::max(-INF_BOUND, Score - delta);
-		}
-
-		// we fell outside the window, so try again with a bigger window, if we still fail after we just search with a full window
-		else if ((Score >= beta)) {
-			beta = std::min(Score + delta, INF_BOUND);
-		}
-		else break;
-		delta *= 1.44;
-	}
-	return Score;
-}
-
-
-
-
 // Iterative deepening from depth = 1 to MAXDEPTH
 void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 
@@ -417,11 +360,8 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 	if (bestMove == NOMOVE) {
 		for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) {
 
-
-
 			// Start alpha beta search
 			bestScore = AlphaBeta(-INF_BOUND, INF_BOUND, currentDepth, pos, info, TRUE);
-			//bestScore = AspirationWindowSearch(bestScore, currentDepth, pos, info);
 
 			// Check status
 			if (info->stopped == TRUE) {
