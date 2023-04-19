@@ -34,8 +34,11 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 #define MAXDEPTH 64 // Maximum depth for searching
 #define MAX_HASH 2048
 
-#define INF_BOUND 30000 // Infinte score definition
-#define ISMATE (INF_BOUND - MAXDEPTH)
+#define INF_BOUND 32670 // Infinte score definition
+#define CONTEMPT -1 // Contempt factors
+#define mate_score 31000
+#define mate_value 32000
+#define ISMATE (mate_value - MAXDEPTH)
 
 #define START_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Starting FEN string
 

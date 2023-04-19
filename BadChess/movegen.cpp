@@ -50,20 +50,36 @@ History score
 */
 
 const int VictimScore[13] = { 0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600 }; // Victim scores
-static int MvvLvaScores[13][13];
 
+// MVV LVA [attacker][victim]
+const int MvvLvaScores[12][12] = {
+	105, 205, 305, 405, 505, 605,  105, 205, 305, 405, 505, 605,
+	104, 204, 304, 404, 504, 604,  104, 204, 304, 404, 504, 604,
+	103, 203, 303, 403, 503, 603,  103, 203, 303, 403, 503, 603,
+	102, 202, 302, 402, 502, 602,  102, 202, 302, 402, 502, 602,
+	101, 201, 301, 401, 501, 601,  101, 201, 301, 401, 501, 601,
+	100, 200, 300, 400, 500, 600,  100, 200, 300, 400, 500, 600,
 
-// Initialization MvvLva
-void InitMvvLva() {
-	
-	int Attacker;
-	int Victim;
-	for (Attacker = wP; Attacker <= bK; ++Attacker) {
-		for (Victim = wP; Victim <= bK; ++Victim) {
-			MvvLvaScores[Victim][Attacker] = VictimScore[Victim] + 6 - (VictimScore[Attacker] / 100);
-		}
-	}
-}
+	105, 205, 305, 405, 505, 605,  105, 205, 305, 405, 505, 605,
+	104, 204, 304, 404, 504, 604,  104, 204, 304, 404, 504, 604,
+	103, 203, 303, 403, 503, 603,  103, 203, 303, 403, 503, 603,
+	102, 202, 302, 402, 502, 602,  102, 202, 302, 402, 502, 602,
+	101, 201, 301, 401, 501, 601,  101, 201, 301, 401, 501, 601,
+	100, 200, 300, 400, 500, 600,  100, 200, 300, 400, 500, 600
+};
+
+//
+//// Initialization MvvLva
+//void InitMvvLva() {
+//	
+//	int Attacker;
+//	int Victim;
+//	for (Attacker = wP; Attacker <= bK; ++Attacker) {
+//		for (Victim = wP; Victim <= bK; ++Victim) {
+//			MvvLvaScores[Victim][Attacker] = VictimScore[Victim] + 6 - (VictimScore[Attacker] / 100);
+//		}
+//	}
+//}
 
 
 // Check for if a move exists

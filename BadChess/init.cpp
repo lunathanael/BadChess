@@ -210,12 +210,16 @@ void AllInit() {
 	InitBitMasks();
 	InitHashKeys();
 	InitFilesRanksBrd();
-	InitEvalMasks();
-	InitMvvLva();
+	if (not USENNUE) {
+		InitEvalMasks();
+	}
+	// InitMvvLva(); Hard coded in
 	InitPolyBook();
 
 
-	// init Stockfish NNUE
+	// init NNUE
+	if (USENNUE) {
 
-	init_nnue((char*)"nn-9931db908a9b.nnue");
+		init_nnue((char*)"nn-9931db908a9b.nnue");
+	}
 }

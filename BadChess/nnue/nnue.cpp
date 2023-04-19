@@ -1214,7 +1214,7 @@ static bool verify_net(const void* evalData, size_t size)
     if (size != 21022697) return false;
 
     const char* d = (const char*)evalData;
-    if (readu_le_u32(d) != NnueVersion) return false;
+    //if (readu_le_u32(d) != NnueVersion) return false;
     if (readu_le_u32(d + 4) != 0x3e5aa6eeU) return false;
     if (readu_le_u32(d + 8) != 177) return false;
     if (readu_le_u32(d + TransformerStart) != 0x5d69d7b8) return false;

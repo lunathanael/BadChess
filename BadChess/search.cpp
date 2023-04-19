@@ -109,12 +109,21 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 
 	// Repetition
 	if (IsRepetition(pos) || pos->fiftyMove >= 100) {
-		return 0;
+		return CONTEMPT;
 	}
+
+	int InCheck = SqAttacked(pos->KingSq[pos->side], pos->side ^ 1, pos);
+
 	// Max Depth
 	if (pos->ply > MAXDEPTH - 1) {
-		return EvalPosition(pos);
+		return InCheck ? 0 : EvalPosition(pos);
 	}
+
+	// Mate distance pruning
+	alpha = std::max(alpha, -mate_value + pos->ply);
+	beta = std::min(beta, mate_value - pos->ply - 1);
+	if (alpha >= beta)
+		return alpha;
 
 	int Score = EvalPosition(pos);
 	// Standing pat
@@ -193,12 +202,13 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 
 	// Check for draw or repetition
 	if ((IsRepetition(pos) || pos->fiftyMove >= 100) && pos->ply) {
-		return 0;
+		return CONTEMPT;
 	}
 
 	if (pos->ply > MAXDEPTH - 1) {
 		return EvalPosition(pos);
 	}
+
 
 	// Search further if in check
 	int InCheck = SqAttacked(pos->KingSq[pos->side], pos->side ^ 1, pos);
@@ -225,9 +235,12 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 			return 0;
 		}
 
-		if (Score >= beta && abs(Score) < ISMATE) {
+		if (Score >= beta){
+			if (abs(Score) < ISMATE) {
+				Score = beta;
+			}
 			++info->nullCut;
-			return beta;
+			return Score;
 		}
 	}
 
@@ -321,10 +334,10 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 	// Checkmate and stalemate
 	if (Legal == 0) {
 		if (InCheck) {
-			return -INF_BOUND + pos->ply; // Checkmate
+			return (- mate_value + pos->ply); // Checkmate
 		}
 		else {
-			return 0; // Stalemate
+			return CONTEMPT; // Stalemate
 		}
 	}
 
@@ -372,9 +385,23 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 			pvMoves = GetPvLine(currentDepth, pos); // Get PV line
 			bestMove = pos->pvArray[0];
 
+			long  time = GetTimeMs() - info->starttime;
+			uint64_t nps = info->nodes / (time + !time) * 1000;;
+
 			if (info->GAME_MODE == UCIMODE || info->POST_THINKING == TRUE) {
-				std::cout << "info score cp " << bestScore << " depth " << currentDepth << " nodes " << info->nodes <<
-					" time " << GetTimeMs() - info->starttime << " pv ";
+				if (bestScore > -mate_value && bestScore < -mate_score)
+					std::cout << "info score mate " << -(bestScore + mate_value) / 2 << " depth " << currentDepth << " nodes " << info->nodes <<
+					" nps " << nps << " time " << time << " pv ";
+
+				else if (bestScore > mate_score && bestScore < mate_value)
+					std::cout << "info score mate " << (mate_value - bestScore) / 2 + 1 << " depth " << currentDepth << " nodes " << info->nodes <<
+					" nps " << nps << " time " << time << " pv ";
+
+				else
+					std::cout << "info score cp " << bestScore << " depth " << currentDepth << " nodes " << info->nodes <<
+					" nps " << nps << " time " << time << " pv ";
+				//std::cout << "info score cp " << bestScore << " depth " << currentDepth << " nodes " << info->nodes <<
+				//	" time " << GetTimeMs() - info->starttime << " pv ";
 				for (int count = 0; count < pvMoves; ++count) {
 					// print PV move
 					std::cout << PrMove(pos->pvArray[count]);
