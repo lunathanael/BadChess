@@ -22,7 +22,7 @@ static void parse_moves(const std::string moves, S_BOARD* pos)
 
 
 // parse UCI "go" command, returns true if we have to search afterwards and false otherwise
-static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
+static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos, S_HASHTABLE *table) {
 
 	
 	int depth = -1, movetime = -1; int movestogo = 25;
@@ -116,7 +116,7 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 	std::cout << "stop: " << info->stoptime << " ";
 	std::cout << "depth: " << info->depth << " \n";
 	
-	SearchPosition(pos, info);
+	SearchPosition(pos, info, table);
 }
 
 
@@ -252,7 +252,7 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 				ParsePosition("position startpos", pos);
 			}
 			// call parse go function
-			ParseGo(input, info, pos);
+			ParseGo(input, info, pos, HashTable);
 		}
 		// parse UCI "run" command
 		else if (tokens[0] == "run") {
@@ -261,7 +261,7 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 				ParsePosition("position startpos", pos);
 			}
 			// call parse go function
-			ParseGo("go infinite", info, pos);
+			ParseGo("go infinite", info, pos, HashTable);
 		}
 
 		// parse UCI "isready" command
@@ -278,6 +278,7 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
 		// parse UCI "ucinewgame" command
 		else if (input == "ucinewgame") {
+			ClearHashTable(HashTable);
 			ParsePosition("position startpos\n", pos);
 		}
 
@@ -296,7 +297,7 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 				if (MB < 4) MB = 4;
 				if (MB > MAX_HASH) MB = MAX_HASH;
 				printf("Set Hash to %d MB\n", MB);
-				InitHashTable(pos->HashTable, MB);
+				InitHashTable(HashTable, MB);
 			}
 			else if (tokens.at(2) == "Book") {
 				if (tokens.at(4) == "true") {

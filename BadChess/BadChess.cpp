@@ -17,8 +17,8 @@ int main(int argc, char *argv[])
 	S_SEARCHINFO info[1];
 
 	info->quit = FALSE;
-	pos->HashTable->pTable = NULL;
-	InitHashTable(pos->HashTable, 512);
+	HashTable->pTable = NULL;
+	InitHashTable(HashTable, 512);
 
 	printf("Welcome to BadChess! Type 'cons' for console mode...\n");
 
@@ -54,19 +54,13 @@ int main(int argc, char *argv[])
 			if (info->quit == TRUE) break;
 			continue;
 		}
-
-		//else if (input == "cons") {
-		//	Console_Loop(pos, info);
-		//	if (info->quit == TRUE) break;
-		//	continue;
-		//}
 		if (input == "quit") {
 			break;
 		}
 	}
 
 	// Clean allocated memory
-	free(pos->HashTable->pTable);
+	free(HashTable->pTable);
 	CleanPolyBook();
 	return 0;
 };

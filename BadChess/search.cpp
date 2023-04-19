@@ -69,7 +69,7 @@ static int IsRepetition(const S_BOARD* pos) {
 
 
 // Clear search information for a new search
-static void ClearForSearch(S_BOARD* pos, S_SEARCHINFO* info) {
+static void ClearForSearch(S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE *table) {
 	
 	// Define indices
 	int index = 0;
@@ -89,9 +89,10 @@ static void ClearForSearch(S_BOARD* pos, S_SEARCHINFO* info) {
 		}
 	}
 
-	pos->HashTable->overWrite = 0;
-	pos->HashTable->hit = 0;
-	pos->HashTable->cut = 0;
+	//table->overWrite = 0;
+	table->hit = 0;
+	table->cut = 0;
+	++table->currentAge; // Incremement current hash table age
 	pos->ply = 0; // Set search ply to 0
 
 	// Reset search info
@@ -188,7 +189,7 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 
 
 // NegaMax Alpha Beta pruning search
-static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO* info, int DoNull) {
+static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE * table, int DoNull) {
 
 
 	// Valid board
@@ -240,15 +241,15 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 
 
 	// Probe hash entry
-	if (ProbeHashEntry(pos, &PvMove, &Score, alpha, beta, depth) == TRUE) {
-		++pos->HashTable->cut;
+	if (ProbeHashEntry(pos, table, &PvMove, &Score, alpha, beta, depth) == TRUE) {
+		+table->cut;
 		return Score;
 	}
 
 	// Null move
 	if (DoNull && !InCheck && pos->ply && (pos->bigPce[pos->side] > 1) && depth >= 4) {
 		MakeNullMove(pos);
-		Score = -AlphaBeta(-beta, -beta + 1, depth - 4, pos, info, FALSE);
+		Score = -AlphaBeta(-beta, -beta + 1, depth - 4, pos, info, table, FALSE);
 		TakeNullMove(pos);
 		if (info->stopped == TRUE) {
 			return 0;
@@ -312,18 +313,18 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 
 		// TRYING Late Move Reduction
 		if (MoveNum == 0) { // First move, use full-window search
-			Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
+			Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, table, TRUE);
 		}
 		else {
 			if (MoveNum >= FullDepthMoves && depth >= ReductionLimit and not (InCheck or list->moves[MoveNum].move & MFLAGCAP)) {
-				Score = -AlphaBeta(-beta, -alpha, depth - 2, pos, info, TRUE);
+				Score = -AlphaBeta(-beta, -alpha, depth - 2, pos, info, table, TRUE);
 			}
 			else Score = alpha + 1;// Hack to ensure that full-depth search is done.
 
 			if (Score > alpha) {
-				Score = -AlphaBeta(-(alpha + 1), -alpha, depth - 1, pos, info, TRUE); // Research with full window
+				Score = -AlphaBeta(-(alpha + 1), -alpha, depth - 1, pos, info, table, TRUE); // Research with full window
 				if (Score > alpha && Score < beta)
-					Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
+					Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, table, TRUE);
 			}
 		}
 
@@ -354,7 +355,7 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 						pos->searchKillers[0][pos->ply] = list->moves[MoveNum].move;
 					}
 					
-					StoreHashEntry(pos, BestMove, beta, HFBETA, depth); // Store hash entry of position
+					StoreHashEntry(pos, table, BestMove, beta, HFBETA, depth); // Store hash entry of position
 
 					return beta;
 				}
@@ -380,17 +381,17 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 
 	// Store best move for new alpha value
 	if (alpha != OldAlpha) {
-		StoreHashEntry(pos, BestMove, BestScore, HFEXACT, depth); // Store hash entry of position
+		StoreHashEntry(pos, table, BestMove, BestScore, HFEXACT, depth); // Store hash entry of position
 	}
 	else {
-		StoreHashEntry(pos, BestMove, alpha, HFALPHA, depth); // Store hash entry of position
+		StoreHashEntry(pos, table, BestMove, alpha, HFALPHA, depth); // Store hash entry of position
 	}
 
 	return alpha;
 }
 
 
-int AspirationWindowSearch(int prev_eval, int depth, S_BOARD* pos, S_SEARCHINFO* info) {
+int AspirationWindowSearch(int prev_eval, int depth, S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE * table) {
 	int Score = 0;
 
 	//We set an expected window for the score at the next search depth, this window is not 100% accurate so we might need to try a bigger window and re-search the position
@@ -407,7 +408,7 @@ int AspirationWindowSearch(int prev_eval, int depth, S_BOARD* pos, S_SEARCHINFO*
 
 	//Stay at current depth if we fail high/low because of the aspiration windows
 	while (true) {
-		Score = AlphaBeta(alpha, beta, depth, pos, info, TRUE);
+		Score = AlphaBeta(alpha, beta, depth, pos, info, table, TRUE);
 
 
 		CheckUp(info);
@@ -436,7 +437,7 @@ int AspirationWindowSearch(int prev_eval, int depth, S_BOARD* pos, S_SEARCHINFO*
 
 
 // Iterative deepening from depth = 1 to MAXDEPTH
-void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
+void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE *table) {
 
 	// Define variables
 	int bestMove = NOMOVE;
@@ -445,7 +446,7 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 	int pvMoves = 0;
 	int pvNum = 0;
 
-	ClearForSearch(pos, info); // Prepare for search
+	ClearForSearch(pos, info, table); // Prepare for search
 
 	if (EngineOptions->UseBook == TRUE) {
 		bestMove = GetBookMove(pos);
@@ -461,14 +462,14 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 			//bestScore = AlphaBeta(-INF_BOUND, INF_BOUND, currentDepth, pos, info, TRUE);
 
 			// start aspiration window search
-			bestScore = AspirationWindowSearch(bestScore, currentDepth, pos, info);
+			bestScore = AspirationWindowSearch(bestScore, currentDepth, pos, info, table);
 
 			// Check status
 			if (info->stopped == TRUE) {
 				break;
 			}
 
-			pvMoves = GetPvLine(currentDepth, pos); // Get PV line
+			pvMoves = GetPvLine(currentDepth, pos, table); // Get PV line
 			bestMove = pos->pvArray[0];
 
 			long time = GetTimeMs() - info->starttime;
