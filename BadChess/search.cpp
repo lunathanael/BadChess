@@ -108,11 +108,6 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 	
 	// Valid board
 	ASSERT(CheckBoard(pos));
-
-	if (info->nodes & 2047) {
-		CheckUp(info);
-
-	}
 	if (info->stopped) {
 		return 0;
 	}
@@ -414,9 +409,8 @@ int AspirationWindowSearch(int prev_eval, int depth, S_BOARD* pos, S_SEARCHINFO*
 	while (true) {
 		Score = AlphaBeta(alpha, beta, depth, pos, info, TRUE);
 
-		if (info->nodes & 2047) {
-			CheckUp(info);
-		}
+
+		CheckUp(info);
 		if (info->stopped) {
 			break;
 		}
@@ -459,7 +453,7 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 
 	// Iterative deepening
 	if (bestMove == NOMOVE) {
-		EngineOptions->UseBook == FALSE;
+		EngineOptions->UseBook = FALSE;
 		for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) {
 
 
