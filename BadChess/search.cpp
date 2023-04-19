@@ -14,7 +14,7 @@ const int ReductionLimit = 3;
 static void CheckUp(S_SEARCHINFO *info) {
 	
 	// check if more than Maxtime passed and we have to stop
-	if ((info->timeset  && GetTimeMs() > info->stoptime))
+	if ((info->timeset) && (GetTimeMs() > info->stoptime))
 		info->stopped = TRUE;
 	ReadInput(info); // Check if input is waiting
 }
@@ -22,7 +22,7 @@ static void CheckUp(S_SEARCHINFO *info) {
 static void StopEarly(S_SEARCHINFO* info)
 {
 	// check if we used all the nodes/movetime we had or if we used more than our lowerbound of time
-	if ((info->timeset) && GetTimeMs() > info->optstoptime)
+	if ((info->timeset) && (GetTimeMs() > info->optstoptime))
 		info->stopped = TRUE;
 }
 
@@ -109,8 +109,10 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 	// Valid board
 	ASSERT(CheckBoard(pos));
 
+	if (info->nodes & 2047) {
+		CheckUp(info);
 
-	CheckUp(info);
+	}
 	if (info->stopped) {
 		return 0;
 	}
@@ -208,7 +210,10 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 	}
 
 	// Check time elapsed
-	CheckUp(info);
+	if (info->nodes & 2047) {
+		CheckUp(info);
+
+	}
 	if (info->stopped) {
 		return 0;
 	}
@@ -409,7 +414,9 @@ int AspirationWindowSearch(int prev_eval, int depth, S_BOARD* pos, S_SEARCHINFO*
 	while (true) {
 		Score = AlphaBeta(alpha, beta, depth, pos, info, TRUE);
 
-		CheckUp(info);
+		if (info->nodes & 2047) {
+			CheckUp(info);
+		}
 		if (info->stopped) {
 			break;
 		}
@@ -470,7 +477,7 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 			pvMoves = GetPvLine(currentDepth, pos); // Get PV line
 			bestMove = pos->pvArray[0];
 
-			long  time = GetTimeMs() - info->starttime;
+			long time = GetTimeMs() - info->starttime;
 			uint64_t nps = info->nodes / (time + !time) * 1000;;
 
 			if (info->GAME_MODE == UCIMODE || info->POST_THINKING == TRUE) {
@@ -498,6 +505,7 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 
 			// Cleared depth, time up.
 			StopEarly(info);
+			CheckUp(info);
 
 		}
 	}
