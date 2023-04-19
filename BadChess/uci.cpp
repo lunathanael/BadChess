@@ -64,7 +64,6 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 		if (tokens.at(i) == "movetime") {
 			movetime = std::stoi(tokens[i + 1]);
 			time = movetime;
-			movestogo = 1;
 			info->timeset = TRUE;
 		}
 
@@ -76,14 +75,34 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 	info->starttime = GetTimeMs();
 	info->depth = depth;
 
-	//calculate time allocation for the move
-	if (info->timeset) {
-		time /= movestogo;
-		time -= 50;
-		info->stoptime = info->starttime + time + inc;
-	}
-
 	int safety_overhead = 50;
+
+	//calculate time allocation for the move
+	if (info->timeset and movetime != -1) {
+		time -= safety_overhead;
+		info->stoptime = info->starttime + time + inc;
+		info->optstoptime = info->starttime + time + inc;
+	}
+	else if (info->timeset && info->movestogo != -1)
+	{
+		time -= safety_overhead;
+		int time_slot = time / info->movestogo;
+		int basetime = (time_slot);
+		info->stoptime = info->starttime + basetime;
+		info->optstoptime = info->starttime + basetime;
+	}
+	else if (info->timeset)
+	{
+		time -= safety_overhead;
+		int time_slot = time / 20 + inc / 2;
+		int basetime = (time_slot);
+		//optime is the time we use to stop if we just cleared a depth
+		int optime = basetime * 0.6;
+		//maxtime is the absolute maximum time we can spend on a search
+		int maxtime = std::min(time, basetime * 2);
+		info->stoptime = info->starttime + maxtime;
+		info->optstoptime = info->starttime + optime;
+	}
 
 	if (depth == -1) {
 		info->depth = MAXDEPTH;
@@ -187,13 +206,13 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
 	// Definitions
 	bool parsed_position = false;
-	int MB = 64;
+	int MB = 512;
 
 
 	// Start uci
 	printf("id name %s\n", NAME);
 	printf("id author Nate\n");
-	printf("option name Hash type spin default 64 min 4 max %d\n", MAX_HASH);
+	printf("option name Hash type spin default 512 min 4 max %d\n", MAX_HASH);
 	printf("option name Book type check default true\n");
 	printf("uciok\n");
 

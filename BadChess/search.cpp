@@ -6,14 +6,27 @@
 #include <algorithm>
 
 
+// For LMR
+const int FullDepthMoves = 4;
+const int ReductionLimit = 3;
+
 // Check if the time is up or interrupt from GUI
 static void CheckUp(S_SEARCHINFO *info) {
 	
-	if (info->timeset == TRUE && GetTimeMs() > info->stoptime) {
+	// check if more than Maxtime passed and we have to stop
+	if ((info->timeset  && GetTimeMs() > info->stoptime))
 		info->stopped = TRUE;
-	}
+	else info->stopped = FALSE;
 
 	ReadInput(info); // Check if input is waiting
+}
+
+static void StopEarly(S_SEARCHINFO* info)
+{
+	// check if we used all the nodes/movetime we had or if we used more than our lowerbound of time
+	if ((info->timeset) && GetTimeMs() > info->optstoptime)
+		info->stopped = TRUE;
+	else info->stopped = FALSE;
 }
 
 
@@ -279,15 +292,33 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 
 		++Legal;
 
+		//// TRYING Late Move Reduction
+		//if (MoveNum >= 3 and depth > 2 and not InCheck and !(list->moves[MoveNum].move & MFLAGCAP)) {
+		//	Score = -AlphaBeta(-beta, -alpha, depth - 2, pos, info, TRUE);
+		//	if (alpha < Score) {
+		//		Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
+		//	}
+		//}
+		//else {
+		//	Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
+		//}
+
+
 		// TRYING Late Move Reduction
-		if (MoveNum >= 3 and depth > 2 and not InCheck and !(list->moves[MoveNum].move & MFLAGCAP)) {
-			Score = -AlphaBeta(-beta, -alpha, depth - 2, pos, info, TRUE);
-			if (alpha < Score) {
-				Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
-			}
+		if (MoveNum == 0) { // First move, use full-window search
+			Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
 		}
 		else {
-			Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
+			if (MoveNum >= FullDepthMoves && depth >= ReductionLimit and not (InCheck or list->moves[MoveNum].move & MFLAGCAP)) {
+				Score = -AlphaBeta(-beta, -alpha, depth - 2, pos, info, TRUE);
+			}
+			else Score = alpha + 1;// Hack to ensure that full-depth search is done.
+
+			if (Score > alpha) {
+				Score = -AlphaBeta(-(alpha + 1), -alpha, depth - 1, pos, info, TRUE); // Research with full window
+				if (Score > alpha && Score < beta)
+					Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
+			}
 		}
 
 
@@ -371,7 +402,9 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 
 	// Iterative deepening
 	if (bestMove == NOMOVE) {
+		EngineOptions->UseBook == FALSE;
 		for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) {
+
 
 			// Start alpha beta search
 			bestScore = AlphaBeta(-INF_BOUND, INF_BOUND, currentDepth, pos, info, TRUE);
@@ -380,7 +413,6 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 			if (info->stopped == TRUE) {
 				break;
 			}
-
 
 			pvMoves = GetPvLine(currentDepth, pos); // Get PV line
 			bestMove = pos->pvArray[0];
@@ -411,6 +443,8 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 
 			}
 
+			// Cleared depth, time up.
+			StopEarly(info);
 
 		}
 	}

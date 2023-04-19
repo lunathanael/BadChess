@@ -180,6 +180,7 @@ typedef struct {
 	int starttime;
 
 	int stoptime;
+	int optstoptime;
 
 	int depth;
 	int depthset;

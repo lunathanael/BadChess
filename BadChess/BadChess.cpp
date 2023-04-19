@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 
 	info->quit = FALSE;
 	pos->HashTable->pTable = NULL;
-	InitHashTable(pos->HashTable, 64);
+	InitHashTable(pos->HashTable, 512);
 
 	printf("Welcome to BadChess! Type 'cons' for console mode...\n");
 
