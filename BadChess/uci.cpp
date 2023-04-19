@@ -203,7 +203,7 @@ static void ParsePosition(const std::string& command, S_BOARD* pos) {
 // Uci function
 void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
-	info->GAME_MODE = UCIMODE;
+	EngineOptions->UseBook = FALSE;
 
 	// Definitions
 	bool parsed_position = false;
@@ -214,7 +214,7 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 	printf("id name %s\n", NAME);
 	printf("id author Nate\n");
 	printf("option name Hash type spin default 512 min 4 max %d\n", MAX_HASH);
-	printf("option name Book type check default true\n");
+	printf("option name Book type check default false\n");
 	printf("uciok\n");
 
 	// Main loop

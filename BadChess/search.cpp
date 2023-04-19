@@ -474,28 +474,26 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 			long time = GetTimeMs() - info->starttime;
 			uint64_t nps = info->nodes / (time + !time) * 1000;;
 
-			if (info->GAME_MODE == UCIMODE || info->POST_THINKING == TRUE) {
-				if (bestScore > -mate_value && bestScore < -mate_score)
-					std::cout << "info score mate " << -(bestScore + mate_value) / 2 << " depth " << currentDepth << " nodes " << info->nodes <<
-					" nps " << nps << " time " << time << " pv ";
+			if (bestScore > -mate_value && bestScore < -mate_score)
+				std::cout << "info score mate " << -(bestScore + mate_value) / 2 << " depth " << currentDepth << " nodes " << info->nodes <<
+				" nps " << nps << " time " << time << " pv ";
 
-				else if (bestScore > mate_score && bestScore < mate_value)
-					std::cout << "info score mate " << (mate_value - bestScore) / 2 + 1 << " depth " << currentDepth << " nodes " << info->nodes <<
-					" nps " << nps << " time " << time << " pv ";
+			else if (bestScore > mate_score && bestScore < mate_value)
+				std::cout << "info score mate " << (mate_value - bestScore) / 2 + 1 << " depth " << currentDepth << " nodes " << info->nodes <<
+				" nps " << nps << " time " << time << " pv ";
 
-				else
-					std::cout << "info score cp " << bestScore << " depth " << currentDepth << " nodes " << info->nodes <<
-					" nps " << nps << " time " << time << " pv ";
-				//std::cout << "info score cp " << bestScore << " depth " << currentDepth << " nodes " << info->nodes <<
-				//	" time " << GetTimeMs() - info->starttime << " pv ";
-				for (int count = 0; count < pvMoves; ++count) {
-					// print PV move
-					std::cout << PrMove(pos->pvArray[count]);
-					printf(" ");
-				}
-				std::cout << std::endl;
+			else
+				std::cout << "info score cp " << bestScore << " depth " << currentDepth << " nodes " << info->nodes <<
+				" nps " << nps << " time " << time << " pv ";
 
+			for (int count = 0; count < pvMoves; ++count) {
+				// print PV move
+				std::cout << PrMove(pos->pvArray[count]);
+				printf(" ");
 			}
+			std::cout << std::endl;
+
+			
 
 			// Cleared depth, time up.
 			StopEarly(info);
@@ -503,14 +501,7 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 
 		}
 	}
-	if (info->GAME_MODE == UCIMODE) {
-		printf("bestmove %s\n", PrMove(bestMove));
-	}
-	else {
-		printf("\n\n***!! BadChess makes move %s !!***\n\n", PrMove(bestMove));
-		MakeMove(pos, bestMove);
-		PrintBoard(pos);
-	}
+	printf("bestmove %s\n", PrMove(bestMove));
 
 }
 

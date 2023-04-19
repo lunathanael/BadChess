@@ -51,7 +51,7 @@ enum { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE
 enum { RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE }; // Enumerating Ranks
 enum { WHITE, BLACK, BOTH }; // Enumerating Color
 
-enum { UCIMODE, XBOARDMODE, CONSOLEMODE }; // Enumerating mode
+// enum { UCIMODE, XBOARDMODE, CONSOLEMODE }; // Enumerating mode
 
 enum {
 	A1 = 21, B1, C1, D1, E1, F1, G1, H1,
@@ -191,9 +191,6 @@ typedef struct {
 
 	int quit;
 	int stopped;
-
-	int GAME_MODE;
-	int POST_THINKING;
 
 	float fh; // Fail high
 	float fhf; // Fail high first
@@ -370,10 +367,6 @@ extern int ParseMove(const std::string& move_string, S_BOARD* pos);
 
 // misc.cpp
 extern std::vector<std::string> split_command(const std::string& command);
-
-// xboard.cpp
-extern void Console_Loop(S_BOARD* pos, S_SEARCHINFO* info);
-extern void XBoard_Loop(S_BOARD* pos, S_SEARCHINFO* info);
 
 // polybook.cpp
 extern void CleanPolyBook();

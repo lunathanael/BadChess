@@ -54,16 +54,12 @@ int main(int argc, char *argv[])
 			if (info->quit == TRUE) break;
 			continue;
 		}
-		else if (input == "xboard") {
-			XBoard_Loop(pos, info);
-			if (info->quit == TRUE) break;
-			continue;
-		}
-		else if (input == "cons") {
-			Console_Loop(pos, info);
-			if (info->quit == TRUE) break;
-			continue;
-		}
+
+		//else if (input == "cons") {
+		//	Console_Loop(pos, info);
+		//	if (info->quit == TRUE) break;
+		//	continue;
+		//}
 		if (input == "quit") {
 			break;
 		}
