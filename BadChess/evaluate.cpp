@@ -4,6 +4,9 @@
 #include "stdio.h"
 #include "defs.h"
 
+// nnue
+#include "nnue_eval.h"
+
 
 const int IsolatedPawn = -10; // Penalty for isolate pawn
 const int DoubledPawns = -10; // Penalty for doubled pawns
@@ -117,10 +120,8 @@ int MaterialDraw(const S_BOARD* pos) {
 	return FALSE;
 }
 
-
-
 // Return evaluation score from position
-int EvalPosition(const S_BOARD* pos) {
+int EvalPositionHand(const S_BOARD* pos) {
 	ASSERT(CheckBoard(pos));
 	// Define indices
 	int pce;
@@ -328,6 +329,74 @@ int EvalPosition(const S_BOARD* pos) {
 	}
 }
 
+
+// NNUE piece encoding
+int encode_nnue[13] = { 0, 6, 5, 4, 3, 2, 1, 12, 11, 10, 9, 8, 7 };
+
+
+
+// Evaluate position with NNUE
+int EvalNNUE(const S_BOARD* pos) {
+
+	// NNUE probe arrays
+	int pieces[33];
+	int squares[33];
+
+	// NNUE probe arrays index
+	int index = 2;
+
+	// loops over pieces
+	for (int piece = 1; piece < 13; ++piece) {
+
+		// Loop over squares
+		for (int pceNum = 0; pceNum < pos->pceNum[piece]; ++pceNum) {
+
+			// White king
+			if (piece == wK) {
+
+				// pieces and squares array
+				pieces[0] = encode_nnue[piece];
+				squares[0] = SQ64(pos->pList[piece][pceNum]);
+			}
+			else if (piece == bK) {
+
+				// pieces and squares array
+				pieces[1] = encode_nnue[piece];
+				squares[1] = SQ64(pos->pList[piece][pceNum]);
+			}
+			else {
+				// pieces and squares array
+				pieces[index] = encode_nnue[piece];
+				squares[index] = SQ64(pos->pList[piece][pceNum]);
+
+				// Increment index
+				++index;
+			}
+		}
+	}
+
+	// end square, piece arrays with zero terminating characters
+	pieces[index] = 0;
+	squares[index] = 0;
+
+	// Penalty for 50 move rule
+
+	return evaluate_nnue(pos->side, pieces, squares) * (100 - pos->fiftyMove) / 100;
+}
+
+
+
+
+
+// Return evaluation score, passer function
+int EvalPosition(const S_BOARD* pos) {
+	if (USENNUE) {
+		return EvalNNUE(pos);
+	}
+	else {
+		return EvalPositionHand(pos);
+	}
+}
 
 
 

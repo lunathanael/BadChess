@@ -25,7 +25,7 @@ static void parse_moves(const std::string moves, S_BOARD* pos)
 static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 
 	
-	int depth = -1, movetime = -1; int movestogo = 25;
+	int depth = -1, movetime = -1; int movestogo = 35;
 	int time = -1; int inc = 0;
 	info->timeset = FALSE;
 

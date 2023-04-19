@@ -59,7 +59,7 @@ void InitPolyBook() {
 
 	EngineOptions->UseBook = FALSE;
 
-	FILE* pFile = fopen("Titans.bin", "rb");
+	FILE* pFile = fopen("final-book.bin", "rb");
 
 	if (pFile == NULL) {
 		printf("Book File Not Read\n");

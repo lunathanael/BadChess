@@ -4,6 +4,9 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+// include NNUE probe library wrapper header
+#include "nnue_eval.h"
+
 // Fill 64 bits with random numbers, I.e: 0000 000000000000000 000000000000000 000000000000000 000000000000000
 #define RAND_64 (	(U64)rand() | \
 					(U64)rand() << 15 | \
@@ -210,4 +213,9 @@ void AllInit() {
 	InitEvalMasks();
 	InitMvvLva();
 	InitPolyBook();
+
+
+	// init Stockfish NNUE
+
+	init_nnue((char*)"nn-9931db908a9b.nnue");
 }

@@ -267,7 +267,7 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 		++Legal;
 
 		// TRYING Late Move Reduction
-		if (MoveNum >= 5 and depth > 2 and not InCheck and !(list->moves[MoveNum].move & MFLAGCAP)) {
+		if (MoveNum >= 3 and depth > 2 and not InCheck and !(list->moves[MoveNum].move & MFLAGCAP)) {
 			Score = -AlphaBeta(-beta, -alpha, depth - 2, pos, info, TRUE);
 			if (alpha < Score) {
 				Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
