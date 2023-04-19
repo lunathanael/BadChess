@@ -111,6 +111,9 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 
 
 	CheckUp(info);
+	if (info->stopped) {
+		return 0;
+	}
 
 
 	++info->nodes; // Increment nodes
@@ -206,7 +209,9 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 
 	// Check time elapsed
 	CheckUp(info);
-
+	if (info->stopped) {
+		return 0;
+	}
 	++info->nodes;
 
 	// Check for draw or repetition
