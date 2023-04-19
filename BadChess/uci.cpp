@@ -25,7 +25,7 @@ static void parse_moves(const std::string moves, S_BOARD* pos)
 static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 
 	
-	int depth = -1, movetime = -1; int movestogo = 30;
+	int depth = -1, movetime = -1; int movestogo = 20;
 	int time = -1; int inc = 0;
 	info->timeset = FALSE;
 	bool movestogoset = false;
@@ -115,7 +115,6 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 	std::cout << "start: " << info->starttime << " ";
 	std::cout << "stop: " << info->stoptime << " ";
 	std::cout << "depth: " << info->depth << " ";
-	std::cout << "timeset: " << info->timeset << " \n";
 	
 	SearchPosition(pos, info);
 }
@@ -178,7 +177,7 @@ static void ParsePosition(const std::string& command, S_BOARD* pos) {
 	}
 
 	// parse UCI "fen" command
-	else {
+	else {	
 
 		// if a "fen" command is available within command string
 		if (command.find("fen") != std::string::npos) {

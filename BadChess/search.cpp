@@ -16,8 +16,6 @@ static void CheckUp(S_SEARCHINFO *info) {
 	// check if more than Maxtime passed and we have to stop
 	if ((info->timeset  && GetTimeMs() > info->stoptime))
 		info->stopped = TRUE;
-	else info->stopped = FALSE;
-
 	ReadInput(info); // Check if input is waiting
 }
 
@@ -26,7 +24,6 @@ static void StopEarly(S_SEARCHINFO* info)
 	// check if we used all the nodes/movetime we had or if we used more than our lowerbound of time
 	if ((info->timeset) && GetTimeMs() > info->optstoptime)
 		info->stopped = TRUE;
-	else info->stopped = FALSE;
 }
 
 
@@ -112,10 +109,8 @@ static int Quiescence(int alpha, int beta, S_BOARD* pos, S_SEARCHINFO* info) {
 	// Valid board
 	ASSERT(CheckBoard(pos));
 
-	// Check time elapsed
-	if ((info->nodes & 2047) == 0) {
-		CheckUp(info);
-	}
+
+	CheckUp(info);
 
 
 	++info->nodes; // Increment nodes
@@ -201,15 +196,16 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 	ASSERT(beta > alpha);
 	ASSERT(depth >= 0);
 	// At terminal node
+	int InCheck = SqAttacked(pos->KingSq[pos->side], pos->side ^ 1, pos);
+
+	if (InCheck) depth = std::max(1, depth + 1);
 	if (depth <= 0) {
 		return Quiescence(alpha, beta, pos, info);
 		// return EvalPosition(pos);
 	}
 
 	// Check time elapsed
-	if ((info->nodes & 2047) == 0) {
-		CheckUp(info);
-	}
+	CheckUp(info);
 
 	++info->nodes;
 
@@ -219,15 +215,20 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 	}
 
 	if (pos->ply > MAXDEPTH - 1) {
-		return EvalPosition(pos);
+		if (InCheck) {
+			return EvalPosition(pos);
+
+		}
+		else {
+			return 0;
+		}
 	}
 
-
-	// Search further if in check
-	int InCheck = SqAttacked(pos->KingSq[pos->side], pos->side ^ 1, pos);
-	if (InCheck == TRUE) {
-		++depth;
-	}
+	// Mate distance pruning
+	alpha = std::max(alpha, -mate_value + pos->ply);
+	beta = std::min(beta, mate_value - pos->ply - 1);
+	if (alpha >= beta)
+		return alpha;
 
 	int Score = -INF_BOUND;
 	int PvMove = NOMOVE;
@@ -384,6 +385,50 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 }
 
 
+int AspirationWindowSearch(int prev_eval, int depth, S_BOARD* pos, S_SEARCHINFO* info) {
+	int Score = 0;
+
+	//We set an expected window for the score at the next search depth, this window is not 100% accurate so we might need to try a bigger window and re-search the position
+	int delta = 50;
+	// define initial alpha beta bounds
+	int alpha = -INF_BOUND;
+	int beta = INF_BOUND;
+
+	// only set up the windows is the search depth is bigger or equal than Aspiration_Depth to avoid using windows when the search isn't accurate enough
+	if (depth >= 3) {
+		alpha = std::max(-INF_BOUND, prev_eval - delta);
+		beta = std::min(prev_eval + delta, INF_BOUND);
+	}
+
+	//Stay at current depth if we fail high/low because of the aspiration windows
+	while (true) {
+		Score = AlphaBeta(alpha, beta, depth, pos, info, TRUE);
+
+		CheckUp(info);
+		if (info->stopped) {
+			break;
+		}
+
+		// stop calculating and return best move so far
+		if (info->stopped) break;
+
+		// we fell outside the window, so try again with a bigger window, if we still fail after we just search with a full window
+		if ((Score <= alpha)) {
+			beta = (alpha + beta) / 2;
+			alpha = std::max(-INF_BOUND, Score - delta);
+		}
+
+		// we fell outside the window, so try again with a bigger window, if we still fail after we just search with a full window
+		else if ((Score >= beta)) {
+			beta = std::min(Score + delta, INF_BOUND);
+		}
+		else break;
+		delta *= 1.44;
+	}
+	return Score;
+}
+
+
 // Iterative deepening from depth = 1 to MAXDEPTH
 void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 
@@ -407,7 +452,10 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info) {
 
 
 			// Start alpha beta search
-			bestScore = AlphaBeta(-INF_BOUND, INF_BOUND, currentDepth, pos, info, TRUE);
+			//bestScore = AlphaBeta(-INF_BOUND, INF_BOUND, currentDepth, pos, info, TRUE);
+
+			// start aspiration window search
+			bestScore = AspirationWindowSearch(bestScore, currentDepth, pos, info);
 
 			// Check status
 			if (info->stopped == TRUE) {
