@@ -25,9 +25,10 @@ static void parse_moves(const std::string moves, S_BOARD* pos)
 static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 
 	
-	int depth = -1, movetime = -1; int movestogo = 35;
+	int depth = -1, movetime = -1; int movestogo = 30;
 	int time = -1; int inc = 0;
 	info->timeset = FALSE;
+	bool movestogoset = false;
 
 	std::vector<std::string> tokens = split_command(line);
 
@@ -59,6 +60,7 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 			movestogo = std::stoi(tokens[i + 1]);
 			if (movestogo > 0)
 				info->movestogo = movestogo;
+				movestogoset = true;
 		}
 
 		if (tokens.at(i) == "movetime") {
@@ -83,7 +85,7 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 		info->stoptime = info->starttime + time + inc;
 		info->optstoptime = info->starttime + time + inc;
 	}
-	else if (info->timeset && info->movestogo != -1)
+	else if (info->timeset && movestogoset)
 	{
 		time -= safety_overhead;
 		int time_slot = time / info->movestogo;
@@ -94,7 +96,7 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos) {
 	else if (info->timeset)
 	{
 		time -= safety_overhead;
-		int time_slot = time / 20 + inc / 2;
+		int time_slot = time / movestogo + inc / 2;
 		int basetime = (time_slot);
 		//optime is the time we use to stop if we just cleared a depth
 		int optime = basetime * 0.6;
