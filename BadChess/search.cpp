@@ -555,6 +555,9 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE *table) {
 
 	if (EngineOptions->UseBook == TRUE) {
 		bestMove = GetBookMove(pos);
+		std::cout << "info score cp " << 0 << " depth " << 0 << " nodes " << 0 <<
+			" nps " << 0 << " time\n " << 0;
+		printf("bestmove %s\n", PrMove(bestMove));
 	}
 
 	// Iterative deepening
