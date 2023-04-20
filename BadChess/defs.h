@@ -32,6 +32,7 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
 #define MAXPOSITIONMOVES 256 // Maximum number of moves expected in a given position
 #define MAXDEPTH 64 // Maximum depth for searching
+#define MAXTHREADS 32 // Maximum threads for searching
 #define MAX_HASH 2048
 
 #define INF_BOUND 32670 // Infinte score definition
@@ -88,8 +89,6 @@ typedef struct {
 	int UseBook;
 } S_OPTIONS;
 
-
-
 // Hash transposition tables
 enum { HFNONE, HFALPHA, HFBETA, HFEXACT };
 typedef struct {
@@ -127,6 +126,7 @@ typedef struct {
 	U64 posKey; // position Key
 
 } S_UNDO;
+
 
 // Structure for Board
 typedef struct {
@@ -190,6 +190,8 @@ typedef struct {
 	float fhf; // Fail high first
 	int nullCut;
 
+	int threadNum;
+
 } S_SEARCHINFO;
 
 
@@ -200,6 +202,19 @@ typedef struct {
 	S_HASHTABLE* ttable;
 
 } S_SEARCH_THREAD_DATA;
+
+
+
+
+typedef struct {
+	S_BOARD* pos;
+	S_SEARCHINFO* info;
+	S_HASHTABLE* ttable;
+
+	int threadNumber;
+	int depth;
+	int bestMove;
+} S_SEARCH_WORKER_DATA;
 
 
 

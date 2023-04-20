@@ -231,13 +231,15 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 	// Definitions
 	bool parsed_position = false;
 	int MB = 512;
+	int ths = 1;
 
 
 	// Start uci
 	printf("id name %s\n", NAME);
 	printf("id author Nate\n");
 	printf("option name Hash type spin default 512 min 4 max %d\n", MAX_HASH);
-	printf("option name Book type check default false\n");
+	printf("option name OwnBook type check default false\n");
+	printf("option name Threads type spin default 1 min 1 max %d\n", MAXTHREADS);
 	printf("uciok\n");
 
 	// Main loop
@@ -281,10 +283,10 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 		else if (tokens[0] == "run") {
 			if (!parsed_position) // call parse position function
 			{
-				ParsePosition("position fen r3kb1r/3n1pp1/p6p/2pPp2q/Pp2N3/3B2PP/1PQ2P2/R3K2R w KQkq -", pos);
+				ParsePosition("position fen 8/7p/5k2/5p2/p1p2P2/Pr1pPK2/1P1R3P/8 b - -", pos);
 			}
 			// call parse go function
-			ParseGo("go depth 10", info, pos, HashTable);
+			ParseGo("go infinite", info, pos, HashTable);
 		}
 
 		// parse UCI "isready" command
@@ -323,7 +325,15 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 				printf("Set Hash to %d MB\n", MB);
 				InitHashTable(HashTable, MB);
 			}
-			else if (tokens.at(2) == "Book") {
+
+			if (tokens.at(2) == "Threads") {
+				MB = std::stoi(tokens.at(4));
+				if (ths < 1) ths = 1;
+				if (ths > MAXTHREADS) ths = MAXTHREADS;
+				printf("Set Threads to %d\n", ths);
+				info->threadNum = ths;
+			}
+			else if (tokens.at(2) == "OwnBook") {
 				if (tokens.at(4) == "true") {
 					EngineOptions->UseBook = TRUE;
 				}

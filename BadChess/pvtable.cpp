@@ -127,8 +127,6 @@ void InitHashTable(S_HASHTABLE* table, const int MB) {
 	table->numEntries = HashSize / sizeof(S_HASHENTRY);
 	table->numEntries -= 2;
 
-	table->numEntries = 10'000'000;
-
 	if (table->pTable != NULL) {
 		free(table->pTable);
 	}

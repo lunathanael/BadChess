@@ -5,11 +5,18 @@
 #include <iostream>
 #include <algorithm>
 #include "string.h"
+#include "tinycthread.h"
 
 
 // For LMR
 const int FullDepthMoves = 4;
 const int ReductionLimit = 3;
+
+int rootDepth;
+thrd_t workerThreads[MAXTHREADS];
+
+
+
 
 // Check if the time is up or interrupt from GUI
 static void CheckUp(S_SEARCHINFO *info) {
@@ -19,11 +26,14 @@ static void CheckUp(S_SEARCHINFO *info) {
 		info->stopped = TRUE;
 }
 
-static void StopEarly(S_SEARCHINFO* info)
+static bool StopEarly(S_SEARCHINFO* info)
 {
 	// check if we used all the nodes/movetime we had or if we used more than our lowerbound of time
-	if ((info->timeset) && (GetTimeMs() > info->optstoptime))
+	if ((info->timeset) && (GetTimeMs() > info->optstoptime)) {
 		info->stopped = TRUE;
+		return true;
+	}
+	return false;
 }
 
 
@@ -426,6 +436,8 @@ int AspirationWindowSearch(int prev_eval, int depth, S_BOARD* pos, S_SEARCHINFO*
 	return Score;
 }
 
+
+
 int SearchPosition_Thread(void* data) {
 	S_SEARCH_THREAD_DATA* searchData = (S_SEARCH_THREAD_DATA*)data;
 	S_BOARD* pos = (S_BOARD *) malloc(sizeof(S_BOARD)); // Allocate memory for board
@@ -441,17 +453,103 @@ int SearchPosition_Thread(void* data) {
 }
 
 
+void IterativeDeepen(S_SEARCH_WORKER_DATA* workerData) {
 
+	// Define variables
+	workerData->bestMove = NOMOVE;
+	int bestScore = -INF_BOUND;
+	int currentDepth = 0;
+	int pvMoves = 0;
+	int pvNum = 0;
+
+	// Iterative deepening
+	for (currentDepth = 1; currentDepth <= workerData->info->depth; ++currentDepth) {
+
+		rootDepth = currentDepth;
+		// start aspiration window search
+		bestScore = AspirationWindowSearch(bestScore, currentDepth, workerData->pos, workerData->info, workerData->ttable);
+
+		if (workerData->threadNumber == 0) {
+			if (workerData->info->stopped == TRUE) break;
+			pvMoves = GetPvLine(currentDepth, workerData->pos, workerData->ttable); // Get PV line
+			workerData->bestMove = workerData->pos->pvArray[0];
+
+			long time = GetTimeMs() - workerData->info->starttime;
+			uint64_t nps = workerData->info->nodes / (time + !time) * 1000; // Might be an issue
+
+			if (bestScore > -mate_value && bestScore < -mate_score)
+				std::cout << "info score mate " << -(bestScore + mate_value) / 2 << " depth " << currentDepth << " nodes " << workerData->info->nodes <<
+				" nps " << nps << " time " << time << " pv ";
+
+			else if (bestScore > mate_score && bestScore < mate_value)
+				std::cout << "info score mate " << (mate_value - bestScore) / 2 + 1 << " depth " << currentDepth << " nodes " << workerData->info->nodes <<
+				" nps " << nps << " time " << time << " pv ";
+
+			else
+				std::cout << "info score cp " << bestScore << " depth " << currentDepth << " nodes " << workerData->info->nodes <<
+				" nps " << nps << " time " << time << " pv ";
+
+			for (int count = 0; count < pvMoves; ++count) {
+				// print PV move
+				std::cout << PrMove(workerData->pos->pvArray[count]);
+				printf(" ");
+			}
+			std::cout << std::endl;
+
+			if (StopEarly(workerData->info)) {
+				break;
+			}
+		}
+
+	}
+}
+
+
+// Start a worker thread
+int StartWorkerThread(void* data) {
+
+	S_SEARCH_WORKER_DATA* workerData = (S_SEARCH_WORKER_DATA*)data;
+	//printf("Thread:%d Starts\n", workerData->threadNumber);
+	IterativeDeepen(workerData);
+	//printf("Thread:%d Ends\n", workerData->threadNumber, workerData->depth);
+
+	if (workerData->threadNumber == 0) {
+		printf("bestmove %s\n", PrMove(workerData->bestMove));
+	}
+	free(workerData); // Free worker memory
+	return 0;
+}
+
+
+// Initialize a worker thread
+void SetupWorker(int threadNum, thrd_t* workerTh, S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE* table) {
+
+	S_SEARCH_WORKER_DATA* pWorkerData = (S_SEARCH_WORKER_DATA * ) malloc(sizeof(S_SEARCH_WORKER_DATA));
+	pWorkerData->pos = (S_BOARD*) malloc(sizeof(S_BOARD));
+	memcpy(pWorkerData->pos, pos, sizeof(S_BOARD));
+	pWorkerData->info = info;
+	pWorkerData->ttable = table;
+	pWorkerData->threadNumber = threadNum;
+
+	thrd_create(workerTh, &StartWorkerThread, (void*)pWorkerData); // Start worker thread
+}
+
+
+
+void CreateSearchWorkers(S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE* table) {
+
+	//printf("CreateSearchWorkers:%d\n", info->threadNum);
+
+	for (int i = 0; i < info->threadNum; ++i) {
+		SetupWorker(i, &workerThreads[i], pos, info, table);
+	}
+}
 
 // Iterative deepening from depth = 1 to MAXDEPTH
 void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE *table) {
 
 	// Define variables
 	int bestMove = NOMOVE;
-	int bestScore = -INF_BOUND;
-	int currentDepth = 0;
-	int pvMoves = 0;
-	int pvNum = 0;
 
 	ClearForSearch(pos, info, table); // Prepare for search
 
@@ -462,54 +560,14 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE *table) {
 	// Iterative deepening
 	if (bestMove == NOMOVE) {
 		EngineOptions->UseBook = FALSE;
-		for (currentDepth = 1; currentDepth <= info->depth; ++currentDepth) {
+		CreateSearchWorkers(pos, info, table);
 
-
-			// Start alpha beta search
-			//bestScore = AlphaBeta(-INF_BOUND, INF_BOUND, currentDepth, pos, info, TRUE);
-
-			// start aspiration window search
-			bestScore = AspirationWindowSearch(bestScore, currentDepth, pos, info, table);
-
-			// Check status
-			if (info->stopped == TRUE) {
-				break;
-			}
-
-			pvMoves = GetPvLine(currentDepth, pos, table); // Get PV line
-			bestMove = pos->pvArray[0];
-
-			long time = GetTimeMs() - info->starttime;
-			uint64_t nps = info->nodes / (time + !time) * 1000;;
-
-			if (bestScore > -mate_value && bestScore < -mate_score)
-				std::cout << "info score mate " << -(bestScore + mate_value) / 2 << " depth " << currentDepth << " nodes " << info->nodes <<
-				" nps " << nps << " time " << time << " pv ";
-
-			else if (bestScore > mate_score && bestScore < mate_value)
-				std::cout << "info score mate " << (mate_value - bestScore) / 2 + 1 << " depth " << currentDepth << " nodes " << info->nodes <<
-				" nps " << nps << " time " << time << " pv ";
-
-			else
-				std::cout << "info score cp " << bestScore << " depth " << currentDepth << " nodes " << info->nodes <<
-				" nps " << nps << " time " << time << " pv ";
-
-			for (int count = 0; count < pvMoves; ++count) {
-				// print PV move
-				std::cout << PrMove(pos->pvArray[count]);
-				printf(" ");
-			}
-			std::cout << std::endl;
-
-			
-
-			// Cleared depth, time up.
-			StopEarly(info);
-			CheckUp(info);
-
-		}
 	}
-	printf("bestmove %s\n", PrMove(bestMove));
+
+	// Join the worker threads
+	for (int i = 0; i < info->threadNum; ++i) {
+		thrd_join(workerThreads[i], NULL);
+	}
 
 }
 
