@@ -488,8 +488,7 @@ void IterativeDeepen(S_SEARCH_WORKER_DATA* workerData) {
 
 			for (int count = 0; count < pvMoves; ++count) {
 				// print PV move
-				std::cout << PrMove(workerData->pos->pvArray[count]);
-				printf(" ");
+				std::cout << PrMove(workerData->pos->pvArray[count]) << " ";
 			}
 			std::cout << std::endl;
 
@@ -552,9 +551,14 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE *table) {
 
 	if (EngineOptions->UseBook == TRUE) {
 		bestMove = GetBookMove(pos);
-		std::cout << "info score cp " << 0 << " depth " << 0 << " nodes " << 0 <<
-			" nps " << 0 << " time 0 \n";
-		printf("bestmove %s\n", PrMove(bestMove));
+		if (bestMove != NOMOVE) {
+			std::cout << "info score cp " << 0 << " depth " << 0 << " nodes " << 0 <<
+				" nps " << 0 << " time 0 \n";
+			printf("bestmove %s\n", PrMove(bestMove));
+		}
+		else {
+			EngineOptions->UseBook = FALSE;
+		}
 	}
 
 	// Iterative deepening

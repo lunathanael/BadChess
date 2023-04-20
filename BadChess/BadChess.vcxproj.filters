@@ -69,13 +69,22 @@
     <ClCompile Include="uci.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="xboard.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="polybook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="polykeys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nnue\nnue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nnue\misc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nnue_eval.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tinycthread.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,10 +104,21 @@
     <ClInclude Include="nnue\nnue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="nnue\misc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nnue_eval.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tinycthread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="final-book.bin">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="BadChess.exe" />
+    <None Include="nn-9931db908a9b.nnue" />
   </ItemGroup>
 </Project>

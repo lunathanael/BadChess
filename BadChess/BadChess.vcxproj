@@ -140,24 +140,32 @@
     <ClCompile Include="misc.cpp" />
     <ClCompile Include="movegen.cpp" />
     <ClCompile Include="makemove.cpp" />
+    <ClCompile Include="nnue\misc.cpp" />
+    <ClCompile Include="nnue\nnue.cpp" />
+    <ClCompile Include="nnue_eval.cpp" />
     <ClCompile Include="perft.cpp" />
     <ClCompile Include="polybook.cpp" />
     <ClCompile Include="polykeys.cpp" />
     <ClCompile Include="pvtable.cpp" />
     <ClCompile Include="search.cpp" />
+    <ClCompile Include="tinycthread.c" />
     <ClCompile Include="uci.cpp" />
     <ClCompile Include="validate.cpp" />
-    <ClCompile Include="xboard.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BadChess.h" />
     <ClInclude Include="defs.h" />
     <ClInclude Include="misc.h" />
+    <ClInclude Include="nnue\misc.h" />
     <ClInclude Include="nnue\nnue.h" />
+    <ClInclude Include="nnue_eval.h" />
     <ClInclude Include="polykeys.h" />
+    <ClInclude Include="tinycthread.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="BadChess.exe" />
     <None Include="final-book.bin" />
+    <None Include="nn-9931db908a9b.nnue" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

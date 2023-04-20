@@ -31,8 +31,8 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
 #define MAXPOSITIONMOVES 256 // Maximum number of moves expected in a given position
-#define MAXDEPTH 64 // Maximum depth for searching
-#define MAXTHREADS 64 // Maximum threads for searching
+#define MAXDEPTH 128 // Maximum depth for searching
+#define MAXTHREADS 128 // Maximum threads for searching
 #define MAX_HASH 2048
 
 #define INF_BOUND 32670 // Infinte score definition

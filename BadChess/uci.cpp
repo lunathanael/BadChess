@@ -327,7 +327,7 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 			}
 
 			if (tokens.at(2) == "Threads") {
-				MB = std::stoi(tokens.at(4));
+				ths = std::stoi(tokens.at(4));
 				if (ths < 1) ths = 1;
 				if (ths > MAXTHREADS) ths = MAXTHREADS;
 				printf("Set Threads to %d\n", ths);
