@@ -284,7 +284,7 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 				ParsePosition("position startpos", pos);
 			}
 			// call parse go function
-			ParseGo("go infinite", info, pos, HashTable);
+			ParseGo("go depth 9", info, pos, HashTable);
 		}
 
 		// parse UCI "isready" command

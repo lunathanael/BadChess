@@ -35,7 +35,7 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 #define MAX_HASH 2048
 
 #define INF_BOUND 32670 // Infinte score definition
-#define AB_BOUND 32500
+#define INFINF 32700
 #define CONTEMPT -1 // Contempt factors
 #define mate_score 31000
 #define mate_value 32000
@@ -99,6 +99,9 @@ typedef struct {
 	int depth;
 	int flags;
 	int age;
+
+	U64 smp_data; // Data
+	U64 smp_key; // Position key
 }S_HASHENTRY;
 
 
@@ -359,6 +362,7 @@ extern int ProbeHashEntry(S_BOARD* pos, S_HASHTABLE* table, int* move, int* scor
 extern int ProbePvMove(const S_BOARD* pos, const S_HASHTABLE* table);
 extern int GetPvLine(const int depth, S_BOARD* pos, const S_HASHTABLE * table);
 extern void ClearHashTable(S_HASHTABLE* table);
+extern void TempHashTest(const std::string& command);
 
 // evaluate.cpp
 extern int EvalPosition(const S_BOARD* pos);
