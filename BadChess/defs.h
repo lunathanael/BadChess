@@ -35,6 +35,7 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 #define MAX_HASH 2048
 
 #define INF_BOUND 32670 // Infinte score definition
+#define AB_BOUND 32500
 #define CONTEMPT -1 // Contempt factors
 #define mate_score 31000
 #define mate_value 32000
@@ -113,19 +114,7 @@ typedef struct {
 } S_HASHTABLE;
 
 
-//// Structure for principal variation entry
-//typedef struct {
-//	U64 posKey;
-//	int move;
-//} S_PVENTRY;
-//
-//// Structure for pvEntry table
-//typedef struct {
-//	S_PVENTRY* pTable;
-//	int numEntries;
-//} S_PVTABLE;
-
-// Stucture for Move Undo
+// Structure for Move Undo
 typedef struct {
 
 	int move; // Moves to undo
@@ -174,6 +163,8 @@ typedef struct {
 } S_BOARD;
 
 
+
+
 // Structure for information about the search
 typedef struct {
 
@@ -197,6 +188,16 @@ typedef struct {
 	int nullCut;
 
 } S_SEARCHINFO;
+
+
+// Structure for threading
+typedef struct {
+	S_SEARCHINFO* info;
+	S_BOARD* originalPosition;
+	S_HASHTABLE* ttable;
+
+} S_SEARCH_THREAD_DATA;
+
 
 
 /* GAME MOVE
@@ -346,17 +347,17 @@ extern void PerfTest(int depth, S_BOARD* pos);
 
 // search.cpp
 extern void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE * table);
+extern int SearchPosition_Thread(void* data);
 
 // misc.cpp
 extern int GetTimeMs();
-extern void ReadInput(S_SEARCHINFO* info);
 
 // pvtable.cpp
 extern void InitHashTable(S_HASHTABLE* table, const int MB);
 extern void StoreHashEntry(S_BOARD* pos, S_HASHTABLE* table, const int move, int score, const int flags, const int depth);
 extern int ProbeHashEntry(S_BOARD* pos, S_HASHTABLE* table, int* move, int* score, int alpha, int beta, int depth);
-extern int ProbePvMove(const S_BOARD* pos, S_HASHTABLE* table);
-extern int GetPvLine(const int depth, S_BOARD* pos, S_HASHTABLE * table);
+extern int ProbePvMove(const S_BOARD* pos, const S_HASHTABLE* table);
+extern int GetPvLine(const int depth, S_BOARD* pos, const S_HASHTABLE * table);
 extern void ClearHashTable(S_HASHTABLE* table);
 
 // evaluate.cpp

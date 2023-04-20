@@ -2,10 +2,32 @@
 
 #include "stdio.h"
 #include "defs.h"
+#include "tinycthread.h"
 #include "string.h"
 #include <iostream>
 
 
+thrd_t mainSearchThread;
+
+thrd_t LaunchSearchThread(S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE* table) {
+	S_SEARCH_THREAD_DATA* pSearchData = (S_SEARCH_THREAD_DATA *) malloc(sizeof(S_SEARCH_THREAD_DATA));
+
+	pSearchData->originalPosition = pos;
+	pSearchData->info = info;
+	pSearchData->ttable = table;
+
+	thrd_t th;
+	thrd_create(&th, &SearchPosition_Thread, (void*)pSearchData);
+
+	return th;
+}
+
+
+// Function to join threads
+void JoinSearchThread(S_SEARCHINFO* info) {
+	info->stopped = TRUE;
+	thrd_join(mainSearchThread, NULL);
+}
 
 // parses the moves part of a fen string and plays all the moves included
 static void parse_moves(const std::string moves, S_BOARD* pos)
@@ -116,7 +138,8 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos, S
 	std::cout << "stop: " << info->stoptime << " ";
 	std::cout << "depth: " << info->depth << " \n";
 	
-	SearchPosition(pos, info, table);
+	mainSearchThread = LaunchSearchThread(pos, info, table);
+	//SearchPosition(pos, info, table);
 }
 
 
@@ -273,7 +296,7 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
 		else if (input == "stop")
 		{
-			info->stopped = TRUE;
+			JoinSearchThread(info);
 		}
 
 		// parse UCI "ucinewgame" command
@@ -284,6 +307,7 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 
 		else if (input == "quit") {
 			info->quit = TRUE;
+			JoinSearchThread(info);
 			break;
 		}
 		else if (tokens[0] == "setoption") {

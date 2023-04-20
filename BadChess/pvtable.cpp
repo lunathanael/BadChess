@@ -7,7 +7,7 @@
 S_HASHTABLE HashTable[1];
 
 // Fill PvLine array
-int GetPvLine(const int depth, S_BOARD* pos, S_HASHTABLE * table) {
+int GetPvLine(const int depth, S_BOARD* pos, const S_HASHTABLE * table) {
 
 	ASSERT(depth < MAXDEPTH && depth >= 1);
 
@@ -118,7 +118,7 @@ void StoreHashEntry(S_BOARD* pos, S_HASHTABLE* table, const int move, int score,
 
 
 // Return move from posKey
-int ProbePvMove(const S_BOARD* pos, S_HASHTABLE* table) {
+int ProbePvMove(const S_BOARD* pos, const S_HASHTABLE* table) {
 
 	int index = pos->posKey % table->numEntries;
 	// Valid index

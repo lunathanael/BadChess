@@ -4,6 +4,7 @@
 #include "defs.h"
 #include <iostream>
 #include <algorithm>
+#include "string.h"
 
 
 // For LMR
@@ -16,7 +17,6 @@ static void CheckUp(S_SEARCHINFO *info) {
 	// check if more than Maxtime passed and we have to stop
 	if ((info->timeset) && (GetTimeMs() > info->stoptime))
 		info->stopped = TRUE;
-	ReadInput(info); // Check if input is waiting
 }
 
 static void StopEarly(S_SEARCHINFO* info)
@@ -434,6 +434,22 @@ int AspirationWindowSearch(int prev_eval, int depth, S_BOARD* pos, S_SEARCHINFO*
 	}
 	return Score;
 }
+
+int SearchPosition_Thread(void* data) {
+	S_SEARCH_THREAD_DATA* searchData = (S_SEARCH_THREAD_DATA*)data;
+	S_BOARD* pos = (S_BOARD *) malloc(sizeof(S_BOARD)); // Allocate memory for board
+
+	memcpy(pos, searchData->originalPosition, sizeof(S_BOARD)); // Copying board
+	SearchPosition(pos, searchData->info, searchData->ttable);
+	free(pos); // Free memory
+
+	printf("Freed\n");
+
+
+	return 0;
+}
+
+
 
 
 // Iterative deepening from depth = 1 to MAXDEPTH
