@@ -197,6 +197,8 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 	ASSERT(beta > alpha);
 	ASSERT(depth >= 0);
 	// At terminal node
+
+
 	int InCheck = SqAttacked(pos->KingSq[pos->side], pos->side ^ 1, pos);
 
 	if (InCheck) depth = std::max(1, depth + 1);
@@ -298,17 +300,6 @@ static int AlphaBeta(int alpha, int beta, int depth, S_BOARD* pos, S_SEARCHINFO*
 		}
 
 		++Legal;
-
-		//// TRYING Late Move Reduction
-		//if (MoveNum >= 3 and depth > 2 and not InCheck and !(list->moves[MoveNum].move & MFLAGCAP)) {
-		//	Score = -AlphaBeta(-beta, -alpha, depth - 2, pos, info, TRUE);
-		//	if (alpha < Score) {
-		//		Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
-		//	}
-		//}
-		//else {
-		//	Score = -AlphaBeta(-beta, -alpha, depth - 1, pos, info, TRUE);
-		//}
 
 
 		// TRYING Late Move Reduction

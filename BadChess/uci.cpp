@@ -281,10 +281,10 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 		else if (tokens[0] == "run") {
 			if (!parsed_position) // call parse position function
 			{
-				ParsePosition("position startpos", pos);
+				ParsePosition("position fen r3kb1r/3n1pp1/p6p/2pPp2q/Pp2N3/3B2PP/1PQ2P2/R3K2R w KQkq -", pos);
 			}
 			// call parse go function
-			ParseGo("go depth 9", info, pos, HashTable);
+			ParseGo("go depth 10", info, pos, HashTable);
 		}
 
 		// parse UCI "isready" command

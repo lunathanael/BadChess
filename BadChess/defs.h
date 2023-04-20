@@ -26,7 +26,7 @@ exit(1);}
 
 typedef unsigned long long U64; // Unsigned 64 bit number
 
-#define NAME "BadChess"
+#define NAME "BadChess 1.3"
 #define BRD_SQ_NUM 120
 
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
@@ -93,11 +93,11 @@ typedef struct {
 // Hash transposition tables
 enum { HFNONE, HFALPHA, HFBETA, HFEXACT };
 typedef struct {
-	U64 posKey;
-	int move;
-	int score;
-	int depth;
-	int flags;
+	//U64 posKey;
+	//int move;
+	//int score;
+	//int depth;
+	//int flags;
 	int age;
 
 	U64 smp_data; // Data
