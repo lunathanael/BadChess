@@ -26,7 +26,7 @@ exit(1);}
 
 typedef unsigned long long U64; // Unsigned 64 bit number
 
-#define NAME "BadChess 1.3"
+#define NAME "BadChess 1.4 MultiTNN"
 #define BRD_SQ_NUM 120
 
 #define MAXGAMEMOVES 2048 // Maximum game half moves to store moves
