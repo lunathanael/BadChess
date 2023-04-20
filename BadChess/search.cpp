@@ -446,9 +446,6 @@ int SearchPosition_Thread(void* data) {
 	SearchPosition(pos, searchData->info, searchData->ttable);
 	free(pos); // Free memory
 
-	printf("Freed\n");
-
-
 	return 0;
 }
 
@@ -555,6 +552,9 @@ void SearchPosition(S_BOARD* pos, S_SEARCHINFO* info, S_HASHTABLE *table) {
 
 	if (EngineOptions->UseBook == TRUE) {
 		bestMove = GetBookMove(pos);
+		std::cout << "info score cp " << 0 << " depth " << 0 << " nodes " << 0 <<
+			" nps " << 0 << " time 0 \n";
+		printf("bestmove %s\n", PrMove(bestMove));
 	}
 
 	// Iterative deepening
