@@ -307,6 +307,12 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 			ParsePosition("position startpos\n", pos);
 		}
 
+		// parse perft
+		else if (tokens[0] == "perft") {
+			std::cout << std::stoi(tokens.at(1));
+			PerfTest(std::stoi(tokens.at(1)), pos);
+		}
+
 		else if (input == "quit") {
 			info->quit = TRUE;
 			JoinSearchThread(info);
