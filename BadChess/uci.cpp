@@ -58,7 +58,7 @@ static void ParseGo(const std::string& line, S_SEARCHINFO* info, S_BOARD* pos, S
 	for (size_t i = 1; i < tokens.size(); ++i) {
 
 		if (tokens.at(1) == "infinite") {
-			;
+			continue;
 		}
 
 		if (tokens.at(i) == "binc" && pos->side == BLACK) {
@@ -305,6 +305,12 @@ void Uci_Loop(S_BOARD *pos, S_SEARCHINFO *info) {
 		else if (input == "ucinewgame") {
 			ClearHashTable(HashTable);
 			ParsePosition("position startpos\n", pos);
+		}
+
+		// parse perft
+		else if (tokens[0] == "perft") {
+			std::cout << std::stoi(tokens.at(1));
+			PerfTest(std::stoi(tokens.at(1)), pos);
 		}
 
 		else if (input == "quit") {
