@@ -169,9 +169,9 @@ void StoreHashEntry(S_BOARD* pos, S_HASHTABLE* table, const int move, int score,
 	if (replace == FALSE) return;
 
 	if (score > ISMATE)
-		score -= pos->ply;
-	else if (score < -ISMATE)
 		score += pos->ply;
+	else if (score < -ISMATE)
+		score -= pos->ply;
 
 	// Create smp entry
 	U64 smp_data = FOLD_DATA(score, depth, flags, move);

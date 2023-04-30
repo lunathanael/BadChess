@@ -30,14 +30,7 @@ int main(int argc, char *argv[])
 	TempHashTest(WAC1);
 	exit(0);*/
 
-	printf("Welcome to BadChess! Type 'cons' for console mode...\n");
-
-	int ArgNum = 0;
-	for (ArgNum = 0; ArgNum < argc; ++ArgNum) {
-		if (strncmp(argv[ArgNum], "NoBook", 6) == 0) {
-			EngineOptions->UseBook = FALSE;
-		}
-	}
+	printf("Welcome to BadChess!\n");
 
 	while (TRUE) {
 
@@ -55,14 +48,12 @@ int main(int argc, char *argv[])
 
 		if (input == "\n")
 			continue;
-		if (input == "uci") {
-			Uci_Loop(pos, info);
-			if (info->quit == TRUE) break;
-			continue;
-		}
 		if (input == "quit") {
 			break;
 		}
+		printf("\n");
+		Uci_Loop(pos, info);
+		if (info->quit == TRUE) break;
 	}
 
 	// Clean allocated memory
