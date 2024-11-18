@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 	}
 
 	// Clean allocated memory
-	free(HashTable->pTable);
+	HashTable->pTable.reset();
 	CleanPolyBook();
 	return 0;
 };

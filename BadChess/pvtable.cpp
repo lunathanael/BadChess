@@ -3,6 +3,7 @@
 
 #include "stdio.h"
 #include "defs.h"
+#include <memory>
 
 
 
@@ -100,19 +101,10 @@ int GetPvLine(const int depth, S_BOARD* pos, const S_HASHTABLE * table) {
 
 // Function to clear the pvTable
 void ClearHashTable(S_HASHTABLE* table) {
-
-	S_HASHENTRY* tableEntry;
-
-	for (tableEntry = table->pTable; tableEntry < table->pTable + table->numEntries; ++tableEntry) {
-		/*tableEntry->posKey = 0ULL;
-		tableEntry->move = NOMOVE;
-		tableEntry->depth = 0;
-		tableEntry->score = 0;
-		tableEntry->flags = 0;*/
-		tableEntry->age = 0;
-		tableEntry->smp_data = 0ULL;
-		tableEntry->smp_key = 0ULL;
-
+	for (int i = 0; i < table->numEntries; ++i) {
+		table->pTable[i].age = 0;
+		table->pTable[i].smp_data = 0ULL;
+		table->pTable[i].smp_key = 0ULL;
 	}
 	table->currentAge = 0;
 	table->newWrite = 0;
@@ -122,23 +114,23 @@ void ClearHashTable(S_HASHTABLE* table) {
 
 // Function to initialize pvTable
 void InitHashTable(S_HASHTABLE* table, const int MB) {
-
-	int HashSize = 0x100000 * MB;
-	table->numEntries = HashSize / sizeof(S_HASHENTRY);
+	size_t HashSize = static_cast<size_t>(0x100000) * MB;
+	table->numEntries = static_cast<int>(HashSize / sizeof(S_HASHENTRY));
 	table->numEntries -= 2;
 
-	if (table->pTable != NULL) {
-		free(table->pTable);
-	}
-
-	table->pTable = (S_HASHENTRY*)malloc(table->numEntries * sizeof(S_HASHENTRY));
-	if (table->pTable == NULL) {
-		printf("Hash Allocation Failed, trying %dMB...\n", MB / 2);
-		InitHashTable(table, MB / 2);
-	}
-	else {
+	try {
+		table->pTable = std::make_unique<S_HASHENTRY[]>(table->numEntries);
 		ClearHashTable(table);
 		printf("HashTable init complete with %d entries\n", table->numEntries);
+	}
+	catch (const std::bad_alloc& e) {
+		printf("Hash Allocation Failed (%dMB), trying %dMB...\n", MB, MB / 2);
+		if (MB > 32) {  // Set a minimum size to prevent infinite recursion
+			InitHashTable(table, MB / 2);
+		} else {
+			printf("Failed to allocate minimum hash size. Exiting.\n");
+			exit(1);
+		}
 	}
 }
 

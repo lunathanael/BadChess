@@ -6,6 +6,7 @@
 #include "cstdio" // Not sure if should be included, needed for debug
 #include <string>
 #include <map>
+#include <memory>
 
 //#define DEBUG // Comment out to run at full speed
 
@@ -33,7 +34,7 @@ typedef unsigned long long U64; // Unsigned 64 bit number
 #define MAXPOSITIONMOVES 256 // Maximum number of moves expected in a given position
 #define MAXDEPTH 128 // Maximum depth for searching
 #define MAXTHREADS 128 // Maximum threads for searching
-#define MAX_HASH 2048
+#define MAX_HASH 16384
 
 #define INF_BOUND 32670 // Infinte score definition
 #define INFINF 32700
@@ -105,8 +106,7 @@ typedef struct {
 
 
 // Structure for Hash table
-typedef struct {
-	S_HASHENTRY* pTable;
+	typedef struct {std::unique_ptr<S_HASHENTRY[]> pTable;
 	int numEntries;
 	int newWrite;
 	int overWrite;
