@@ -2,6 +2,7 @@
 
 #include "stdio.h"
 #include "defs.h"
+#include <cstdint>
 #include <iostream>
 #include <algorithm>
 #include "string.h"
